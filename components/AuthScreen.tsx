@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import * as SecureStore from 'expo-secure-store';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, Platform, Pressable, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, Platform, Pressable, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useThemeStore } from '../stores/themeStore';
 
@@ -13,6 +13,8 @@ interface AuthScreenProps {
 export default function AuthScreen({ onAuthComplete }: AuthScreenProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isAppleAvailable, setIsAppleAvailable] = useState(false);
+  const [showNameInput, setShowNameInput] = useState(false);
+  const [userName, setUserName] = useState('');
   const { isDark, colors, setThemeMode } = useThemeStore();
   const theme = colors;
 
@@ -28,22 +30,33 @@ export default function AuthScreen({ onAuthComplete }: AuthScreenProps) {
   };
 
   const handleGoogleSignIn = async () => {
+    setShowNameInput(true);
+  };
+
+  const completeGoogleSignIn = async () => {
+    if (!userName.trim()) {
+      Alert.alert('Name Required', 'Please enter your name to continue.');
+      return;
+    }
+
     setIsLoading(true);
     try {
-      // For now, simulate Google sign-in
-      // In production, you'd implement actual Google OAuth
+      // Generate a more realistic email from the name
+      const emailName = userName.toLowerCase().replace(/\s+/g, '.');
       const mockUserInfo = {
-        id: 'google_user_123',
-        email: 'user@gmail.com',
-        name: 'John Doe',
+        id: `google_${Date.now()}`,
+        email: `${emailName}@gmail.com`,
+        name: userName.trim(),
         provider: 'google',
         profilePicture: null,
       };
       
       // Store user info securely
       await SecureStore.setItemAsync('user_info', JSON.stringify(mockUserInfo));
-      await SecureStore.setItemAsync('auth_token', 'mock_token_123');
+      await SecureStore.setItemAsync('auth_token', `google_token_${Date.now()}`);
       
+      setShowNameInput(false);
+      setUserName('');
       onAuthComplete(mockUserInfo);
     } catch (error) {
       Alert.alert('Sign In Error', 'Failed to sign in with Google. Please try again.');
@@ -98,6 +111,121 @@ export default function AuthScreen({ onAuthComplete }: AuthScreenProps) {
   const toggleTheme = () => {
     setThemeMode(isDark ? 'light' : 'dark');
   };
+
+  if (showNameInput) {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: theme.background }}>
+        <View style={{ flex: 1, justifyContent: 'center', paddingHorizontal: 32 }}>
+          <View style={{ alignItems: 'center', marginBottom: 48 }}>
+            <View 
+              style={{ 
+                width: 80, 
+                height: 80, 
+                borderRadius: 40, 
+                backgroundColor: theme.primary,
+                justifyContent: 'center',
+                alignItems: 'center',
+                marginBottom: 24,
+              }}
+            >
+              <Ionicons name="person" size={36} color="white" />
+            </View>
+            <Text style={{ 
+              fontSize: 28, 
+              fontWeight: '700', 
+              color: theme.text, 
+              marginBottom: 8,
+              textAlign: 'center'
+            }}>
+              What's your name?
+            </Text>
+            <Text style={{ 
+              fontSize: 16, 
+              color: theme.text, 
+              opacity: 0.7, 
+              textAlign: 'center',
+              lineHeight: 24
+            }}>
+              We'll use this to personalize your experience
+            </Text>
+          </View>
+
+          <View style={{ marginBottom: 32 }}>
+            <TextInput
+              style={{
+                height: 60,
+                borderRadius: 16,
+                backgroundColor: theme.card,
+                borderWidth: 1,
+                borderColor: theme.border,
+                paddingHorizontal: 20,
+                fontSize: 16,
+                color: theme.text,
+                marginBottom: 20
+              }}
+              placeholder="Enter your full name"
+              placeholderTextColor={theme.text + '80'}
+              value={userName}
+              onChangeText={setUserName}
+              autoFocus
+              returnKeyType="done"
+              onSubmitEditing={completeGoogleSignIn}
+            />
+
+            <Pressable
+              onPress={completeGoogleSignIn}
+              disabled={isLoading || !userName.trim()}
+              style={{
+                height: 60,
+                borderRadius: 16,
+                backgroundColor: theme.primary,
+                justifyContent: 'center',
+                alignItems: 'center',
+                opacity: (isLoading || !userName.trim()) ? 0.5 : 1,
+                marginBottom: 16
+              }}
+            >
+              {isLoading ? (
+                <ActivityIndicator size="small" color="white" />
+              ) : (
+                <Text style={{ 
+                  fontSize: 16, 
+                  fontWeight: '600', 
+                  color: 'white' 
+                }}>
+                  Continue with Google
+                </Text>
+              )}
+            </Pressable>
+
+            <Pressable
+              onPress={() => {
+                setShowNameInput(false);
+                setUserName('');
+              }}
+              style={{
+                height: 60,
+                borderRadius: 16,
+                backgroundColor: theme.card,
+                borderWidth: 1,
+                borderColor: theme.border,
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
+            >
+              <Text style={{ 
+                fontSize: 16, 
+                fontWeight: '600', 
+                color: theme.text 
+              }}>
+                Back
+              </Text>
+            </Pressable>
+          </View>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: theme.background }}>
@@ -175,7 +303,7 @@ export default function AuthScreen({ onAuthComplete }: AuthScreenProps) {
         </View>
 
         {/* Sign In Buttons */}
-        <View style={{ gap: 20 }}>
+        <View style={{ gap: 16 }}>
           {/* Apple Sign In - Only show on iOS */}
           {Platform.OS === 'ios' && isAppleAvailable && (
             <Pressable
@@ -186,7 +314,7 @@ export default function AuthScreen({ onAuthComplete }: AuthScreenProps) {
                 alignItems: 'center',
                 justifyContent: 'center',
                 height: 60,
-                borderRadius: 20,
+                borderRadius: 16,
                 backgroundColor: isDark ? '#FFFFFF' : '#000000',
                 opacity: isLoading ? 0.7 : 1,
                 shadowColor: '#000',
@@ -200,9 +328,13 @@ export default function AuthScreen({ onAuthComplete }: AuthScreenProps) {
                 <ActivityIndicator size="small" color={isDark ? '#000000' : '#FFFFFF'} />
               ) : (
                 <>
-                  <Ionicons name="logo-apple" size={24} color={isDark ? '#000000' : '#FFFFFF'} />
+                  <Ionicons 
+                    name="logo-apple" 
+                    size={24} 
+                    color={isDark ? '#000000' : '#FFFFFF'} 
+                  />
                   <Text style={{ 
-                    fontSize: 18, 
+                    fontSize: 16, 
                     fontWeight: '600', 
                     color: isDark ? '#000000' : '#FFFFFF', 
                     marginLeft: 12 
@@ -223,9 +355,9 @@ export default function AuthScreen({ onAuthComplete }: AuthScreenProps) {
               alignItems: 'center',
               justifyContent: 'center',
               height: 60,
-              borderRadius: 20,
+              borderRadius: 16,
               backgroundColor: theme.card,
-              borderWidth: 2,
+              borderWidth: 1,
               borderColor: theme.border,
               opacity: isLoading ? 0.7 : 1,
               shadowColor: '#000',
@@ -239,9 +371,13 @@ export default function AuthScreen({ onAuthComplete }: AuthScreenProps) {
               <ActivityIndicator size="small" color={theme.text} />
             ) : (
               <>
-                <Ionicons name="logo-google" size={24} color="#4285F4" />
+                <Ionicons 
+                  name="logo-google" 
+                  size={24} 
+                  color="#4285F4" 
+                />
                 <Text style={{ 
-                  fontSize: 18, 
+                  fontSize: 16, 
                   fontWeight: '600', 
                   color: theme.text, 
                   marginLeft: 12 
@@ -253,19 +389,18 @@ export default function AuthScreen({ onAuthComplete }: AuthScreenProps) {
           </Pressable>
         </View>
 
-        {/* Privacy Notice */}
-        <Text style={{ 
-          fontSize: 14, 
-          color: theme.text, 
-          opacity: 0.6, 
-          textAlign: 'center', 
-          marginTop: 40,
-          lineHeight: 22,
-          paddingHorizontal: 8
-        }}>
-          By continuing, you agree to our Terms of Service and Privacy Policy. 
-          Your video data is processed locally and never shared.
-        </Text>
+        {/* Footer */}
+        <View style={{ marginTop: 48, alignItems: 'center' }}>
+          <Text style={{ 
+            fontSize: 14, 
+            color: theme.text, 
+            opacity: 0.6, 
+            textAlign: 'center',
+            lineHeight: 20
+          }}>
+            By continuing, you agree to our Terms of Service{'\n'}and Privacy Policy
+          </Text>
+        </View>
       </View>
     </SafeAreaView>
   );

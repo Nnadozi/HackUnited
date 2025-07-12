@@ -14,7 +14,7 @@ export default function VideoLibraryScreen({ onNavigateBack }: VideoLibraryScree
   const { colors, isDark, setThemeMode } = useThemeStore();
   const theme = colors;
   
-  const { videos, addVideo, removeVideo, updateVideo } = useUserStore();
+  const { videos, addVideo, removeVideo } = useUserStore();
   const [showAddModal, setShowAddModal] = useState(false);
   const [videoUrl, setVideoUrl] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -129,14 +129,36 @@ export default function VideoLibraryScreen({ onNavigateBack }: VideoLibraryScree
         flexDirection: 'row', 
         alignItems: 'center', 
         paddingHorizontal: 24, 
-        paddingVertical: 16,
+        paddingVertical: 20,
+        backgroundColor: theme.background,
         borderBottomWidth: 1,
-        borderBottomColor: theme.border
+        borderBottomColor: theme.border + '40'
       }}>
-        <Pressable onPress={onNavigateBack} style={{ marginRight: 16 }}>
-          <Ionicons name="arrow-back" size={24} color={theme.text} />
+        <Pressable 
+          onPress={onNavigateBack} 
+          style={{ 
+            width: 44, 
+            height: 44, 
+            borderRadius: 22,
+            backgroundColor: theme.card,
+            justifyContent: 'center',
+            alignItems: 'center',
+            marginRight: 16,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.1,
+            shadowRadius: 4,
+            elevation: 3,
+          }}
+        >
+          <Ionicons name="arrow-back" size={20} color={theme.text} />
         </Pressable>
-        <Text style={{ fontSize: 20, fontWeight: 'bold', color: theme.text, flex: 1 }}>
+        <Text style={{ 
+          fontSize: 24, 
+          fontWeight: '800', 
+          color: theme.text, 
+          flex: 1 
+        }}>
           Video Library
         </Text>
         
@@ -144,13 +166,18 @@ export default function VideoLibraryScreen({ onNavigateBack }: VideoLibraryScree
         <Pressable 
           onPress={toggleTheme}
           style={{ 
-            width: 40, 
-            height: 40, 
-            borderRadius: 20,
+            width: 44, 
+            height: 44, 
+            borderRadius: 22,
             backgroundColor: theme.card,
             justifyContent: 'center',
             alignItems: 'center',
-            marginRight: 12
+            marginRight: 16,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.1,
+            shadowRadius: 4,
+            elevation: 3,
           }}
         >
           <Ionicons 
@@ -160,8 +187,23 @@ export default function VideoLibraryScreen({ onNavigateBack }: VideoLibraryScree
           />
         </Pressable>
         
-        <Pressable onPress={() => setShowAddModal(true)}>
-          <Ionicons name="add-circle-outline" size={24} color={theme.primary} />
+        <Pressable 
+          onPress={() => setShowAddModal(true)}
+          style={{ 
+            width: 44, 
+            height: 44, 
+            borderRadius: 22,
+            backgroundColor: theme.primary,
+            justifyContent: 'center',
+            alignItems: 'center',
+            shadowColor: theme.primary,
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.3,
+            shadowRadius: 8,
+            elevation: 6,
+          }}
+        >
+          <Ionicons name="add" size={24} color="white" />
         </Pressable>
       </View>
 
@@ -176,15 +218,30 @@ export default function VideoLibraryScreen({ onNavigateBack }: VideoLibraryScree
           flex: 1, 
           alignItems: 'center',
           backgroundColor: theme.card,
-          borderRadius: 16,
-          padding: 16,
+          borderRadius: 20,
+          padding: 20,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.1,
+          shadowRadius: 8,
+          elevation: 4,
           borderWidth: 1,
-          borderColor: theme.border
+          borderColor: theme.border + '40'
         }}>
-          <Text style={{ fontSize: 24, fontWeight: 'bold', color: theme.text }}>
+          <Text style={{ 
+            fontSize: 28, 
+            fontWeight: '800', 
+            color: theme.text,
+            marginBottom: 4
+          }}>
             {videos.length}
           </Text>
-          <Text style={{ fontSize: 14, color: theme.text, opacity: 0.7 }}>
+          <Text style={{ 
+            fontSize: 14, 
+            color: theme.text, 
+            opacity: 0.7,
+            fontWeight: '600'
+          }}>
             Total Videos
           </Text>
         </View>
@@ -192,15 +249,30 @@ export default function VideoLibraryScreen({ onNavigateBack }: VideoLibraryScree
           flex: 1, 
           alignItems: 'center',
           backgroundColor: theme.card,
-          borderRadius: 16,
-          padding: 16,
+          borderRadius: 20,
+          padding: 20,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.1,
+          shadowRadius: 8,
+          elevation: 4,
           borderWidth: 1,
-          borderColor: theme.border
+          borderColor: theme.border + '40'
         }}>
-          <Text style={{ fontSize: 24, fontWeight: 'bold', color: theme.primary }}>
+          <Text style={{ 
+            fontSize: 28, 
+            fontWeight: '800', 
+            color: theme.primary,
+            marginBottom: 4
+          }}>
             {videos.reduce((sum, v) => sum + v.xp_awarded, 0)}
           </Text>
-          <Text style={{ fontSize: 14, color: theme.text, opacity: 0.7 }}>
+          <Text style={{ 
+            fontSize: 14, 
+            color: theme.text, 
+            opacity: 0.7,
+            fontWeight: '600'
+          }}>
             Total XP
           </Text>
         </View>
@@ -208,15 +280,30 @@ export default function VideoLibraryScreen({ onNavigateBack }: VideoLibraryScree
           flex: 1, 
           alignItems: 'center',
           backgroundColor: theme.card,
-          borderRadius: 16,
-          padding: 16,
+          borderRadius: 20,
+          padding: 20,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.1,
+          shadowRadius: 8,
+          elevation: 4,
           borderWidth: 1,
-          borderColor: theme.border
+          borderColor: theme.border + '40'
         }}>
-          <Text style={{ fontSize: 24, fontWeight: 'bold', color: theme.text }}>
+          <Text style={{ 
+            fontSize: 28, 
+            fontWeight: '800', 
+            color: theme.text,
+            marginBottom: 4
+          }}>
             {Math.round(videos.reduce((sum, v) => sum + v.quality_score, 0) / Math.max(videos.length, 1))}%
           </Text>
-          <Text style={{ fontSize: 14, color: theme.text, opacity: 0.7 }}>
+          <Text style={{ 
+            fontSize: 14, 
+            color: theme.text, 
+            opacity: 0.7,
+            fontWeight: '600'
+          }}>
             Avg Quality
           </Text>
         </View>
@@ -229,7 +316,8 @@ export default function VideoLibraryScreen({ onNavigateBack }: VideoLibraryScree
             flex: 1, 
             justifyContent: 'center', 
             alignItems: 'center', 
-            paddingVertical: 60 
+            paddingVertical: 80,
+            paddingHorizontal: 24
           }}>
             <View style={{
               width: 120,
@@ -238,18 +326,20 @@ export default function VideoLibraryScreen({ onNavigateBack }: VideoLibraryScree
               backgroundColor: theme.card,
               justifyContent: 'center',
               alignItems: 'center',
-              marginBottom: 24,
-              borderWidth: 2,
-              borderColor: theme.border,
-              borderStyle: 'dashed'
+              marginBottom: 32,
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 8 },
+              shadowOpacity: 0.1,
+              shadowRadius: 16,
+              elevation: 8,
             }}>
-              <Ionicons name="videocam-outline" size={48} color={theme.border} />
+              <Ionicons name="videocam-outline" size={48} color={theme.primary} />
             </View>
             <Text style={{ 
-              fontSize: 20, 
-              fontWeight: '600',
+              fontSize: 24, 
+              fontWeight: '800',
               color: theme.text, 
-              marginBottom: 8,
+              marginBottom: 12,
               textAlign: 'center'
             }}>
               No videos yet
@@ -259,51 +349,77 @@ export default function VideoLibraryScreen({ onNavigateBack }: VideoLibraryScree
               color: theme.text, 
               opacity: 0.6, 
               textAlign: 'center',
-              paddingHorizontal: 32,
-              lineHeight: 24
+              lineHeight: 24,
+              marginBottom: 32
             }}>
               Add your first video to start tracking your content quality and earning XP!
             </Text>
+            <Pressable
+              onPress={() => setShowAddModal(true)}
+              style={{
+                backgroundColor: theme.primary,
+                borderRadius: 16,
+                paddingHorizontal: 32,
+                paddingVertical: 16,
+                flexDirection: 'row',
+                alignItems: 'center',
+                shadowColor: theme.primary,
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.3,
+                shadowRadius: 8,
+                elevation: 6,
+              }}
+            >
+              <Ionicons name="add-circle-outline" size={20} color="white" />
+              <Text style={{ 
+                fontSize: 16, 
+                fontWeight: '700', 
+                color: 'white', 
+                marginLeft: 8 
+              }}>
+                Add First Video
+              </Text>
+            </Pressable>
           </View>
         ) : (
           <View style={{ paddingHorizontal: 24, paddingBottom: 24 }}>
             {videos.map((video) => (
               <View key={video.id} style={{ 
                 backgroundColor: theme.card,
-                borderRadius: 20,
-                padding: 20,
+                borderRadius: 24,
+                padding: 24,
                 marginBottom: 16,
-                borderWidth: 1,
-                borderColor: theme.border,
                 shadowColor: '#000',
-                shadowOffset: { width: 0, height: 2 },
+                shadowOffset: { width: 0, height: 8 },
                 shadowOpacity: 0.1,
-                shadowRadius: 4,
-                elevation: 2,
+                shadowRadius: 16,
+                elevation: 8,
+                borderWidth: 1,
+                borderColor: theme.border + '40'
               }}>
-                <View style={{ flexDirection: 'row', alignItems: 'flex-start', marginBottom: 16 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'flex-start', marginBottom: 20 }}>
                   <View style={{
-                    width: 48,
-                    height: 48,
-                    borderRadius: 24,
-                    backgroundColor: `${theme.primary}20`,
+                    width: 56,
+                    height: 56,
+                    borderRadius: 28,
+                    backgroundColor: theme.primary + '20',
                     justifyContent: 'center',
                     alignItems: 'center',
                     marginRight: 16
                   }}>
                     <Ionicons 
                       name={getVideoIcon(video) as any} 
-                      size={24} 
+                      size={28} 
                       color={theme.primary} 
                     />
                   </View>
                   <View style={{ flex: 1 }}>
                     <Text style={{ 
-                      fontSize: 16, 
-                      fontWeight: '600', 
+                      fontSize: 18, 
+                      fontWeight: '700', 
                       color: theme.text,
-                      marginBottom: 6,
-                      lineHeight: 22
+                      marginBottom: 8,
+                      lineHeight: 24
                     }}>
                       {video.title}
                     </Text>
@@ -311,49 +427,62 @@ export default function VideoLibraryScreen({ onNavigateBack }: VideoLibraryScree
                       fontSize: 14, 
                       color: theme.text, 
                       opacity: 0.6,
-                      marginBottom: 12
+                      marginBottom: 16,
+                      fontWeight: '500'
                     }}>
                       {formatDate(video.date_watched)} • {video.platform}
                     </Text>
                     
                     {/* Category and XP */}
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
                       <View style={{ 
                         backgroundColor: getCategoryColor(video.category), 
-                        paddingHorizontal: 12, 
-                        paddingVertical: 6, 
-                        borderRadius: 16 
+                        paddingHorizontal: 16, 
+                        paddingVertical: 8, 
+                        borderRadius: 20 
                       }}>
                         <Text style={{ 
                           fontSize: 12, 
-                          fontWeight: '600', 
+                          fontWeight: '700', 
                           color: 'white' 
                         }}>
-                          {video.category}
+                          {video.category.toUpperCase()}
                         </Text>
                       </View>
-                      <Text style={{ 
-                        fontSize: 16, 
-                        fontWeight: '700', 
-                        color: getXPColor(video.xp_awarded) 
+                      <View style={{
+                        backgroundColor: getXPColor(video.xp_awarded) + '20',
+                        paddingHorizontal: 16,
+                        paddingVertical: 8,
+                        borderRadius: 20
                       }}>
-                        {video.xp_awarded > 0 ? '+' : ''}{video.xp_awarded} XP
-                      </Text>
+                        <Text style={{ 
+                          fontSize: 14, 
+                          fontWeight: '800', 
+                          color: getXPColor(video.xp_awarded) 
+                        }}>
+                          {video.xp_awarded > 0 ? '+' : ''}{video.xp_awarded} XP
+                        </Text>
+                      </View>
                     </View>
                   </View>
                   
                   <Pressable 
                     onPress={() => handleDeleteVideo(video)}
                     style={{
-                      width: 36,
-                      height: 36,
-                      borderRadius: 18,
+                      width: 44,
+                      height: 44,
+                      borderRadius: 22,
                       backgroundColor: theme.background,
                       justifyContent: 'center',
-                      alignItems: 'center'
+                      alignItems: 'center',
+                      shadowColor: '#000',
+                      shadowOffset: { width: 0, height: 2 },
+                      shadowOpacity: 0.1,
+                      shadowRadius: 4,
+                      elevation: 2,
                     }}
                   >
-                    <Ionicons name="trash-outline" size={18} color={theme.text} opacity={0.6} />
+                    <Ionicons name="trash-outline" size={20} color={theme.text} opacity={0.6} />
                   </Pressable>
                 </View>
                 
@@ -362,14 +491,24 @@ export default function VideoLibraryScreen({ onNavigateBack }: VideoLibraryScree
                   <View style={{ 
                     flexDirection: 'row', 
                     justifyContent: 'space-between',
-                    paddingTop: 16,
+                    paddingTop: 20,
                     borderTopWidth: 1,
-                    borderTopColor: theme.border
+                    borderTopColor: theme.border + '40'
                   }}>
-                    <Text style={{ fontSize: 12, color: theme.text, opacity: 0.6 }}>
+                    <Text style={{ 
+                      fontSize: 14, 
+                      color: theme.text, 
+                      opacity: 0.6,
+                      fontWeight: '500'
+                    }}>
                       {video.views?.toLocaleString()} views
                     </Text>
-                    <Text style={{ fontSize: 12, color: theme.text, opacity: 0.6 }}>
+                    <Text style={{ 
+                      fontSize: 14, 
+                      color: theme.text, 
+                      opacity: 0.6,
+                      fontWeight: '500'
+                    }}>
                       Quality: {video.quality_score}%
                     </Text>
                   </View>
@@ -398,10 +537,10 @@ export default function VideoLibraryScreen({ onNavigateBack }: VideoLibraryScree
           }}>
             <View style={{ 
               backgroundColor: theme.background,
-              borderTopLeftRadius: 24,
-              borderTopRightRadius: 24,
-              padding: 24,
-              paddingBottom: Platform.OS === 'ios' ? 40 : 24,
+              borderTopLeftRadius: 32,
+              borderTopRightRadius: 32,
+              padding: 32,
+              paddingBottom: Platform.OS === 'ios' ? 48 : 32,
               maxHeight: '80%'
             }}>
               <View style={{ 
@@ -410,10 +549,24 @@ export default function VideoLibraryScreen({ onNavigateBack }: VideoLibraryScree
                 alignItems: 'center',
                 marginBottom: 24
               }}>
-                <Text style={{ fontSize: 24, fontWeight: '700', color: theme.text }}>
+                <Text style={{ 
+                  fontSize: 28, 
+                  fontWeight: '800', 
+                  color: theme.text 
+                }}>
                   Add Video
                 </Text>
-                <Pressable onPress={() => setShowAddModal(false)}>
+                <Pressable 
+                  onPress={() => setShowAddModal(false)}
+                  style={{
+                    width: 44,
+                    height: 44,
+                    borderRadius: 22,
+                    backgroundColor: theme.card,
+                    justifyContent: 'center',
+                    alignItems: 'center'
+                  }}
+                >
                   <Ionicons name="close" size={24} color={theme.text} />
                 </Pressable>
               </View>
@@ -422,23 +575,23 @@ export default function VideoLibraryScreen({ onNavigateBack }: VideoLibraryScree
                 fontSize: 16, 
                 color: theme.text, 
                 opacity: 0.7, 
-                marginBottom: 16,
-                lineHeight: 22
+                marginBottom: 24,
+                lineHeight: 24
               }}>
                 Paste a video URL to analyze its content quality and earn XP
               </Text>
               
-              <View style={{ marginBottom: 20 }}>
+              <View style={{ marginBottom: 24 }}>
                 <TextInput
                   style={{
                     backgroundColor: theme.card,
-                    borderRadius: 16,
-                    padding: 16,
+                    borderRadius: 20,
+                    padding: 20,
                     fontSize: 16,
                     color: theme.text,
                     borderWidth: 2,
-                    borderColor: theme.border,
-                    minHeight: 80,
+                    borderColor: theme.border + '40',
+                    minHeight: 100,
                     textAlignVertical: 'top'
                   }}
                   placeholder="https://youtube.com/watch?v=..."
@@ -446,7 +599,7 @@ export default function VideoLibraryScreen({ onNavigateBack }: VideoLibraryScree
                   value={videoUrl}
                   onChangeText={setVideoUrl}
                   multiline
-                  numberOfLines={3}
+                  numberOfLines={4}
                 />
                 
                 {/* Paste Button */}
@@ -454,22 +607,27 @@ export default function VideoLibraryScreen({ onNavigateBack }: VideoLibraryScree
                   onPress={handlePasteFromClipboard}
                   style={{
                     position: 'absolute',
-                    right: 12,
-                    top: 12,
+                    right: 16,
+                    top: 16,
                     backgroundColor: theme.primary,
-                    borderRadius: 12,
-                    paddingHorizontal: 16,
-                    paddingVertical: 8,
+                    borderRadius: 16,
+                    paddingHorizontal: 20,
+                    paddingVertical: 12,
                     flexDirection: 'row',
-                    alignItems: 'center'
+                    alignItems: 'center',
+                    shadowColor: theme.primary,
+                    shadowOffset: { width: 0, height: 4 },
+                    shadowOpacity: 0.3,
+                    shadowRadius: 8,
+                    elevation: 6,
                   }}
                 >
                   <Ionicons name="clipboard-outline" size={16} color="white" />
                   <Text style={{ 
                     fontSize: 14, 
-                    fontWeight: '600', 
+                    fontWeight: '700', 
                     color: 'white', 
-                    marginLeft: 6 
+                    marginLeft: 8 
                   }}>
                     Paste
                   </Text>
@@ -481,17 +639,27 @@ export default function VideoLibraryScreen({ onNavigateBack }: VideoLibraryScree
                 disabled={isAnalyzing || !videoUrl.trim()}
                 style={{
                   backgroundColor: theme.primary,
-                  borderRadius: 16,
-                  padding: 18,
+                  borderRadius: 20,
+                  padding: 20,
                   alignItems: 'center',
                   opacity: (isAnalyzing || !videoUrl.trim()) ? 0.6 : 1,
                   flexDirection: 'row',
-                  justifyContent: 'center'
+                  justifyContent: 'center',
+                  shadowColor: theme.primary,
+                  shadowOffset: { width: 0, height: 8 },
+                  shadowOpacity: 0.3,
+                  shadowRadius: 16,
+                  elevation: 8,
                 }}
               >
                 {isAnalyzing ? (
                   <>
-                    <Text style={{ fontSize: 16, fontWeight: '600', color: 'white', marginRight: 8 }}>
+                    <Text style={{ 
+                      fontSize: 16, 
+                      fontWeight: '700', 
+                      color: 'white', 
+                      marginRight: 12 
+                    }}>
                       Analyzing...
                     </Text>
                     <View style={{ 
@@ -507,7 +675,12 @@ export default function VideoLibraryScreen({ onNavigateBack }: VideoLibraryScree
                 ) : (
                   <>
                     <Ionicons name="add-circle-outline" size={20} color="white" />
-                    <Text style={{ fontSize: 16, fontWeight: '600', color: 'white', marginLeft: 8 }}>
+                    <Text style={{ 
+                      fontSize: 16, 
+                      fontWeight: '700', 
+                      color: 'white', 
+                      marginLeft: 12 
+                    }}>
                       Add Video
                     </Text>
                   </>

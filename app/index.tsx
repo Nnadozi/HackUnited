@@ -22,6 +22,8 @@ export default function Index() {
     completeOnboarding, 
     applyDailyDecay, 
     lastXpChange,
+    logout,
+    isAuthenticated
   } = useUserStore();
   
   const [activeTab, setActiveTab] = useState('home');
@@ -35,6 +37,13 @@ export default function Index() {
     const subscription = AppState.addEventListener('change', handleAppStateChange);
     return () => subscription.remove();
   }, []);
+
+  // Watch for logout - when user is no longer authenticated, go to auth screen
+  useEffect(() => {
+    if (!isAuthenticated && view === 'main') {
+      setView('auth');
+    }
+  }, [isAuthenticated, view]);
 
   // Effect to trigger XP feedback animation
   useEffect(() => {
@@ -128,13 +137,13 @@ export default function Index() {
   const renderContent = () => {
     switch (activeTab) {
       case 'home':
-        return <HomeScreen onNavigateToLibrary={() => {}} />;
+        return <HomeScreen onNavigateToLibrary={() => setActiveTab('library')} />;
       case 'library':
-        return <VideoLibraryScreen onNavigateBack={() => {}} />;
+        return <VideoLibraryScreen onNavigateBack={() => setActiveTab('home')} />;
       case 'friends':
         return <FriendsScreen />;
       default:
-        return <HomeScreen onNavigateToLibrary={() => {}} />;
+        return <HomeScreen onNavigateToLibrary={() => setActiveTab('library')} />;
     }
   };
 
