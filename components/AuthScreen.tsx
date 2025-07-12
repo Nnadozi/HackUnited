@@ -1,0 +1,272 @@
+import { Ionicons } from '@expo/vector-icons';
+import * as AppleAuthentication from 'expo-apple-authentication';
+import * as SecureStore from 'expo-secure-store';
+import React, { useEffect, useState } from 'react';
+import { ActivityIndicator, Alert, Platform, Pressable, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useThemeStore } from '../stores/themeStore';
+
+interface AuthScreenProps {
+  onAuthComplete: (userInfo: any) => void;
+}
+
+export default function AuthScreen({ onAuthComplete }: AuthScreenProps) {
+  const [isLoading, setIsLoading] = useState(false);
+  const [isAppleAvailable, setIsAppleAvailable] = useState(false);
+  const { isDark, colors, setThemeMode } = useThemeStore();
+  const theme = colors;
+
+  useEffect(() => {
+    checkAppleAuthAvailability();
+  }, []);
+
+  const checkAppleAuthAvailability = async () => {
+    if (Platform.OS === 'ios') {
+      const isAvailable = await AppleAuthentication.isAvailableAsync();
+      setIsAppleAvailable(isAvailable);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    setIsLoading(true);
+    try {
+      // For now, simulate Google sign-in
+      // In production, you'd implement actual Google OAuth
+      const mockUserInfo = {
+        id: 'google_user_123',
+        email: 'user@gmail.com',
+        name: 'John Doe',
+        provider: 'google',
+        profilePicture: null,
+      };
+      
+      // Store user info securely
+      await SecureStore.setItemAsync('user_info', JSON.stringify(mockUserInfo));
+      await SecureStore.setItemAsync('auth_token', 'mock_token_123');
+      
+      onAuthComplete(mockUserInfo);
+    } catch (error) {
+      Alert.alert('Sign In Error', 'Failed to sign in with Google. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleAppleSignIn = async () => {
+    if (!isAppleAvailable) {
+      Alert.alert('Apple Sign-In', 'Apple Sign-In is not available on this device.');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const credential = await AppleAuthentication.signInAsync({
+        requestedScopes: [
+          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+          AppleAuthentication.AppleAuthenticationScope.EMAIL,
+        ],
+      });
+
+      if (credential.identityToken) {
+        const userInfo = {
+          id: credential.user,
+          email: credential.email || 'user@privaterelay.appleid.com',
+          name: credential.fullName ? 
+            `${credential.fullName.givenName || ''} ${credential.fullName.familyName || ''}`.trim() || 'Apple User' :
+            'Apple User',
+          provider: 'apple',
+          profilePicture: null,
+        };
+
+        // Store user info securely
+        await SecureStore.setItemAsync('user_info', JSON.stringify(userInfo));
+        await SecureStore.setItemAsync('auth_token', credential.identityToken);
+        
+        onAuthComplete(userInfo);
+      }
+    } catch (error: any) {
+      if (error.code === 'ERR_CANCELED') {
+        // User canceled the sign-in
+        return;
+      }
+      Alert.alert('Sign In Error', 'Failed to sign in with Apple. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const toggleTheme = () => {
+    setThemeMode(isDark ? 'light' : 'dark');
+  };
+
+  return (
+    <SafeAreaView style={{ flex: 1, backgroundColor: theme.background }}>
+      {/* Theme Toggle */}
+      <View style={{ 
+        position: 'absolute', 
+        top: 60, 
+        right: 24, 
+        zIndex: 10 
+      }}>
+        <Pressable 
+          onPress={toggleTheme}
+          style={{ 
+            width: 44, 
+            height: 44, 
+            borderRadius: 22,
+            backgroundColor: theme.card,
+            justifyContent: 'center',
+            alignItems: 'center',
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.1,
+            shadowRadius: 4,
+            elevation: 3,
+          }}
+        >
+          <Ionicons 
+            name={isDark ? 'sunny' : 'moon'} 
+            size={22} 
+            color={theme.text} 
+          />
+        </Pressable>
+      </View>
+
+      <View style={{ flex: 1, justifyContent: 'center', paddingHorizontal: 32 }}>
+        {/* Logo/Title */}
+        <View style={{ alignItems: 'center', marginBottom: 64 }}>
+          <View 
+            style={{ 
+              width: 100, 
+              height: 100, 
+              borderRadius: 50, 
+              backgroundColor: theme.primary,
+              justifyContent: 'center',
+              alignItems: 'center',
+              marginBottom: 32,
+              shadowColor: theme.primary,
+              shadowOffset: { width: 0, height: 8 },
+              shadowOpacity: 0.3,
+              shadowRadius: 16,
+              elevation: 8,
+            }}
+          >
+            <Ionicons name="diamond" size={48} color="white" />
+          </View>
+          <Text style={{ 
+            fontSize: 36, 
+            fontWeight: '700', 
+            color: theme.text, 
+            marginBottom: 12,
+            textAlign: 'center'
+          }}>
+            Welcome to Clarity
+          </Text>
+          <Text style={{ 
+            fontSize: 18, 
+            color: theme.text, 
+            opacity: 0.7, 
+            textAlign: 'center',
+            lineHeight: 26,
+            paddingHorizontal: 16
+          }}>
+            Level up your productivity by tracking video quality
+          </Text>
+        </View>
+
+        {/* Sign In Buttons */}
+        <View style={{ gap: 20 }}>
+          {/* Apple Sign In - Only show on iOS */}
+          {Platform.OS === 'ios' && isAppleAvailable && (
+            <Pressable
+              onPress={handleAppleSignIn}
+              disabled={isLoading}
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+                height: 60,
+                borderRadius: 20,
+                backgroundColor: isDark ? '#FFFFFF' : '#000000',
+                opacity: isLoading ? 0.7 : 1,
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.15,
+                shadowRadius: 8,
+                elevation: 4,
+              }}
+            >
+              {isLoading ? (
+                <ActivityIndicator size="small" color={isDark ? '#000000' : '#FFFFFF'} />
+              ) : (
+                <>
+                  <Ionicons name="logo-apple" size={24} color={isDark ? '#000000' : '#FFFFFF'} />
+                  <Text style={{ 
+                    fontSize: 18, 
+                    fontWeight: '600', 
+                    color: isDark ? '#000000' : '#FFFFFF', 
+                    marginLeft: 12 
+                  }}>
+                    Continue with Apple
+                  </Text>
+                </>
+              )}
+            </Pressable>
+          )}
+
+          {/* Google Sign In */}
+          <Pressable
+            onPress={handleGoogleSignIn}
+            disabled={isLoading}
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'center',
+              height: 60,
+              borderRadius: 20,
+              backgroundColor: theme.card,
+              borderWidth: 2,
+              borderColor: theme.border,
+              opacity: isLoading ? 0.7 : 1,
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.1,
+              shadowRadius: 8,
+              elevation: 4,
+            }}
+          >
+            {isLoading ? (
+              <ActivityIndicator size="small" color={theme.text} />
+            ) : (
+              <>
+                <Ionicons name="logo-google" size={24} color="#4285F4" />
+                <Text style={{ 
+                  fontSize: 18, 
+                  fontWeight: '600', 
+                  color: theme.text, 
+                  marginLeft: 12 
+                }}>
+                  Continue with Google
+                </Text>
+              </>
+            )}
+          </Pressable>
+        </View>
+
+        {/* Privacy Notice */}
+        <Text style={{ 
+          fontSize: 14, 
+          color: theme.text, 
+          opacity: 0.6, 
+          textAlign: 'center', 
+          marginTop: 40,
+          lineHeight: 22,
+          paddingHorizontal: 8
+        }}>
+          By continuing, you agree to our Terms of Service and Privacy Policy. 
+          Your video data is processed locally and never shared.
+        </Text>
+      </View>
+    </SafeAreaView>
+  );
+} 

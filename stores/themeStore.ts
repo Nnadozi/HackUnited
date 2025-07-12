@@ -27,7 +27,7 @@ export const useThemeStore = create<ThemeStore>()(
       mode: 'system',
       colors: (() => {
         const isDark = Appearance.getColorScheme() === 'dark';
-        return getThemeColors(isDark, '#FFA600');
+        return getThemeColors(isDark, '#20B2AA');
       })(),
       isDark: Appearance.getColorScheme() === 'dark',
       setThemeMode: (mode) => {
@@ -35,7 +35,7 @@ export const useThemeStore = create<ThemeStore>()(
         const isDark = effectiveTheme === 'dark';
         set({
           mode,
-          colors: getThemeColors(isDark, '#FFA600'),
+          colors: getThemeColors(isDark, '#20B2AA'),
           isDark,
         });
       },

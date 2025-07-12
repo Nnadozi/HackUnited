@@ -7,6 +7,11 @@ export default {
   expo: {
     ...appJson.expo,
     name: IS_DEV ? 'Clarity (Dev)' : 'Clarity',
+    plugins: [
+      ...(appJson.expo?.plugins || []),
+      'expo-secure-store',
+      'expo-apple-authentication'
+    ],
     android: {
       package: IS_DEV ? 'com.nnadozi.clarity.dev' : 'com.nnadozi.clarity',
     },

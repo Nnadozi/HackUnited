@@ -1,19 +1,21 @@
 export const CustomLightTheme = {
-  primary: '#5BF188',
-  secondary: '#47BD6A',
-  background: '#FFFFFF',
-  card: '#F2F2F7',
-  text: '#000000',
-  border: '#C6C6C8',
-  notification: '#FF3B30',
+  primary: '#20B2AA', // Turquoise
+  secondary: '#48CAE4', // Light turquoise
+  background: '#E5EBEA', // Light background
+  card: '#DADCE0', // Light card
+  text: '#101419', // Dark text
+  border: '#6C6F7F', // Medium border
+  notification: '#FF6B6B',
+  surface: '#F8F9FA', // Even lighter surface
 };
 
 export const CustomDarkTheme = {
-  primary: '#5BF188',
-  secondary: '#47BD6A',
-  background: '#000000',
-  card: '#1C1C1E',
-  text: '#FFFFFF',
-  border: '#38383A',
-  notification: '#FF453A',
+  primary: '#20B2AA', // Turquoise
+  secondary: '#48CAE4', // Light turquoise
+  background: '#001011', // Dark background
+  card: '#101419', // Dark card
+  text: '#E5EBEA', // Light text
+  border: '#6C6F7F', // Medium border
+  notification: '#FF6B6B',
+  surface: '#1A1D23', // Slightly lighter dark surface
 };
