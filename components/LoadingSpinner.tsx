@@ -1,4 +1,4 @@
-import { useThemeStore } from '@/stores/themeStore';
+import { useTheme } from '@react-navigation/native';
 import React from 'react';
 import { ActivityIndicator, StyleSheet, TextStyle, View, ViewStyle } from 'react-native';
 import CustomText from './CustomText';
@@ -24,7 +24,7 @@ const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
   subTextStyle,
   variant = 'fullscreen'
 }) => {
-  const { colors } = useThemeStore();
+  const { colors } = useTheme();
   const spinnerColor = color || colors.primary;
 
   const renderContent = () => (

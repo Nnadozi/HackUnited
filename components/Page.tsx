@@ -1,4 +1,4 @@
-import { useThemeStore } from '@/stores/themeStore';
+import { useTheme } from '@react-navigation/native';
 import React from 'react';
 import { StyleSheet, ViewStyle } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -10,8 +10,8 @@ interface PageProps {
 
 const Page = ({style, children}:PageProps) => {
   const insets = useSafeAreaInsets();
-  const {colors} = useThemeStore();
-  return (
+  const {colors} = useTheme();
+  return (  
     <SafeAreaView style={[styles.con, style, {
       paddingTop: insets.top * 0.25,
       paddingBottom: insets.bottom * 0.25,

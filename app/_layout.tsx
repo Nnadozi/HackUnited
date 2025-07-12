@@ -5,6 +5,8 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from "react";
+import { CustomDarkTheme, CustomLightTheme } from "@/constants/Colors";
+import { DefaultTheme, DarkTheme, ThemeProvider } from "@react-navigation/native";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -29,9 +31,19 @@ export default function RootLayout() {
     <>
     <StatusBar style={isDark ? "light" : "dark"}/>
     <SafeAreaProvider>
-      <Stack>
-        <Stack.Screen name="index" options={{ headerShown: false }} />
-      </Stack>
+      <ThemeProvider
+        value={{
+          ...(isDark ? DarkTheme : DefaultTheme),
+          colors: {
+            ...(isDark ? DarkTheme.colors : DefaultTheme.colors),
+            ...(isDark ? CustomDarkTheme : CustomLightTheme),
+          },
+        }}
+      >
+        <Stack>
+          <Stack.Screen name="index" options={{ headerShown: false }} />
+        </Stack>
+      </ThemeProvider>
     </SafeAreaProvider>
     </>
 )

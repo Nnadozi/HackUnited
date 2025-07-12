@@ -5,9 +5,11 @@ import CustomButton from "@/components/CustomButton";
 import CustomInput from "@/components/CustomInput";
 import { useState } from "react";
 import CustomIcon from "@/components/CustomIcon";
+import { useTheme } from "@react-navigation/native";
 
 export default function Index() {
-  const { mode, setThemeMode, isDark } = useThemeStore();
+  const { mode, setThemeMode, isDark} = useThemeStore();
+  const {colors} = useTheme(); // USE THIS TO GET THE COLORS, NOT THE USERSTORE
   const [email, setEmail] = useState('');
   return (
     <Page>

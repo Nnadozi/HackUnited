@@ -1,5 +1,6 @@
 export const CustomLightTheme = {
-  primary: '#FFA600',
+  primary: '#5BF188',
+  secondary: '#47BD6A',
   background: '#FFFFFF',
   card: '#F2F2F7',
   text: '#000000',
@@ -8,7 +9,8 @@ export const CustomLightTheme = {
 };
 
 export const CustomDarkTheme = {
-  primary: '#FFA600',
+  primary: '#5BF188',
+  secondary: '#47BD6A',
   background: '#000000',
   card: '#1C1C1E',
   text: '#FFFFFF',

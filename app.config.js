@@ -6,7 +6,13 @@ export default {
   ...appJson,
   expo: {
     ...appJson.expo,
-    name: IS_DEV ? 'hackapp (Dev)' : 'hackapp',
+    name: IS_DEV ? 'Clarity (Dev)' : 'Clarity',
+    android: {
+      package: IS_DEV ? 'com.nnadozi.clarity.dev' : 'com.nnadozi.clarity',
+    },
+    ios: {
+      bundleIdentifier: IS_DEV ? 'com.nnadozi.clarity.dev' : 'com.nnadozi.clarity',
+    },
     extra: {
       ...appJson.expo?.extra,
       router: {}

@@ -1,6 +1,7 @@
 import { useThemeStore } from '@/stores/themeStore';
 import { StyleSheet, ViewStyle } from 'react-native';
 import { Button } from '@rneui/base';
+import { useTheme } from '@react-navigation/native';
 
 interface CustomButtonProps {
     title: string;
@@ -13,7 +14,7 @@ interface CustomButtonProps {
 }
 
 const CustomButton = ({title, onPress, style, disabled, width, marginVertical, isLoading}:CustomButtonProps) => {
-  const {colors} = useThemeStore();
+  const {colors} = useTheme();
   return (
     <Button
     title={title}

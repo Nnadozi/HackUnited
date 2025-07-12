@@ -1,4 +1,4 @@
-import { useThemeStore } from '@/stores/themeStore';
+import { useTheme } from '@react-navigation/native';
 import { Icon } from '@rneui/base';
 import React from 'react';
 import { StyleSheet, ViewStyle } from 'react-native';
@@ -15,7 +15,7 @@ interface CustomIconProps {
 }
 
 const CustomIcon = ({ color, size = 30, name, type, onPress, style, primary, opposite }: CustomIconProps) => {
-  const {colors} = useThemeStore();
+  const {colors} = useTheme();
   return (
     <Icon
       color={color ? color : primary ? colors.primary : opposite ? colors.background : colors.text}

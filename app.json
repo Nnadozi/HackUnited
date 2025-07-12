@@ -1,11 +1,12 @@
 {
   "expo": {
-    "name": "hackapp",
-    "slug": "hackapp",
+    "name": "Clarity",
+    "slug": "clarity",
     "version": "1.0.0",
     "orientation": "portrait",
+    "owner": "hack-united",
     "icon": "./assets/images/icon.png",
-    "scheme": "hackapp",
+    "scheme": "clarity",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
@@ -47,6 +48,12 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "caf232db-831d-47e5-8dfd-2db80ee18878"
+      }
     }
   }
 }
