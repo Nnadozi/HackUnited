@@ -20,20 +20,24 @@ export default function VideoLibraryScreen({ onNavigateBack }: VideoLibraryScree
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   const analyzeVideo = async (url: string) => {
-    // Import the video analysis utility
-    const { generateMockVideoData } = await import('../utils/videoAnalysis');
+    // Import the enhanced video analysis utility
+    const { generateEnhancedVideoAnalysis, generateMockVideoData } = await import('../utils/videoAnalysis');
     
     setIsAnalyzing(true);
     
-    // Simulate AI analysis delay
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    // Use the analysis utility
-    const videoData = generateMockVideoData(url);
-    
-    setIsAnalyzing(false);
-    
-    return videoData;
+    try {
+      // Try enhanced analysis first (includes web scraping for YouTube)
+      const videoData = await generateEnhancedVideoAnalysis(url);
+      setIsAnalyzing(false);
+      return videoData;
+    } catch (error) {
+      console.error('Enhanced analysis failed, falling back to mock data:', error);
+      
+      // Fallback to mock data if enhanced analysis fails
+      const videoData = generateMockVideoData(url);
+      setIsAnalyzing(false);
+      return videoData;
+    }
   };
 
   const handleAddVideo = async () => {
@@ -511,6 +515,107 @@ export default function VideoLibraryScreen({ onNavigateBack }: VideoLibraryScree
                     }}>
                       Quality: {video.quality_score}%
                     </Text>
+                  </View>
+                )}
+
+                {/* Scraped Data */}
+                {video.scraped_data && (
+                  <View style={{ 
+                    paddingTop: 20,
+                    borderTopWidth: 1,
+                    borderTopColor: theme.border + '40'
+                  }}>
+                    <Text style={{ 
+                      fontSize: 14, 
+                      fontWeight: '700', 
+                      color: theme.text,
+                      marginBottom: 12
+                    }}>
+                      Analysis Details
+                    </Text>
+                    
+                    {video.scraped_data.channel_name && (
+                      <View style={{ marginBottom: 8 }}>
+                        <Text style={{ 
+                          fontSize: 12, 
+                          color: theme.text, 
+                          opacity: 0.6,
+                          fontWeight: '500'
+                        }}>
+                          Channel: {video.scraped_data.channel_name}
+                        </Text>
+                      </View>
+                    )}
+
+                    {video.scraped_data.hashtags && video.scraped_data.hashtags.length > 0 && (
+                      <View style={{ marginBottom: 8 }}>
+                        <Text style={{ 
+                          fontSize: 12, 
+                          color: theme.text, 
+                          opacity: 0.6,
+                          fontWeight: '500',
+                          marginBottom: 4
+                        }}>
+                          Hashtags:
+                        </Text>
+                        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
+                          {video.scraped_data.hashtags.slice(0, 5).map((tag, index) => (
+                            <View key={index} style={{
+                              backgroundColor: theme.primary + '20',
+                              paddingHorizontal: 8,
+                              paddingVertical: 4,
+                              borderRadius: 12
+                            }}>
+                              <Text style={{ 
+                                fontSize: 10, 
+                                color: theme.primary,
+                                fontWeight: '600'
+                              }}>
+                                {tag}
+                              </Text>
+                            </View>
+                          ))}
+                        </View>
+                      </View>
+                    )}
+
+                    {video.scraped_data.description && (
+                      <View style={{ marginBottom: 8 }}>
+                        <Text style={{ 
+                          fontSize: 12, 
+                          color: theme.text, 
+                          opacity: 0.6,
+                          fontWeight: '500',
+                          marginBottom: 4
+                        }}>
+                          Description:
+                        </Text>
+                        <Text style={{ 
+                          fontSize: 11, 
+                          color: theme.text, 
+                          opacity: 0.5,
+                          lineHeight: 16
+                        }}>
+                          {video.scraped_data.description.length > 150 
+                            ? video.scraped_data.description.substring(0, 150) + '...'
+                            : video.scraped_data.description}
+                        </Text>
+                      </View>
+                    )}
+
+                    {video.scraped_data.keywords && video.scraped_data.keywords.length > 0 && (
+                      <View>
+                        <Text style={{ 
+                          fontSize: 12, 
+                          color: theme.text, 
+                          opacity: 0.6,
+                          fontWeight: '500',
+                          marginBottom: 4
+                        }}>
+                          Keywords: {video.scraped_data.keywords.slice(0, 3).join(', ')}
+                        </Text>
+                      </View>
+                    )}
                   </View>
                 )}
               </View>

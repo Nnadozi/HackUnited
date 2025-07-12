@@ -3,6 +3,7 @@ import FriendsScreen from '@/components/FriendsScreen';
 import HomeScreen from '@/components/HomeScreen';
 import { LevelUpModal } from '@/components/LevelUpModal';
 import OnboardingFlow from '@/components/OnboardingFlow';
+import VideoAnalysisTest from '@/components/VideoAnalysisTest';
 import VideoLibraryScreen from '@/components/VideoLibraryScreen';
 import { useThemeStore } from '@/stores/themeStore';
 import { useUserStore } from '@/stores/userStore';
@@ -13,6 +14,82 @@ import { ActivityIndicator, Animated, AppState, Pressable, Text, View } from 're
 import ConfettiCannon from 'react-native-confetti-cannon';
 
 type AppView = 'loading' | 'onboarding' | 'auth' | 'main';
+
+const TabButton = ({ 
+  tab, 
+  isActive, 
+  onPress, 
+  icon, 
+  label, 
+  theme 
+}: {
+  tab: string;
+  isActive: boolean;
+  onPress: () => void;
+  icon: string;
+  label: string;
+  theme: any;
+}) => {
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+  const colorAnim = useRef(new Animated.Value(isActive ? 1 : 0)).current;
+
+  useEffect(() => {
+    Animated.timing(colorAnim, {
+      toValue: isActive ? 1 : 0,
+      duration: 200,
+      useNativeDriver: false,
+    }).start();
+  }, [isActive]);
+
+  const handlePress = () => {
+    Animated.sequence([
+      Animated.timing(scaleAnim, {
+        toValue: 0.95,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+      Animated.timing(scaleAnim, {
+        toValue: 1,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+    ]).start();
+    onPress();
+  };
+
+  return (
+    <Pressable onPress={handlePress} style={{ flex: 1, alignItems: 'center' }}>
+      <Animated.View
+        style={{
+          transform: [{ scale: scaleAnim }],
+          backgroundColor: isActive ? theme.primary + '20' : 'transparent',
+          paddingHorizontal: 16,
+          paddingVertical: 8,
+          borderRadius: 16,
+          minWidth: 60,
+          alignItems: 'center',
+        }}
+      >
+        <View style={{ marginBottom: 4 }}>
+          <Ionicons 
+            name={icon as any} 
+            size={24} 
+            color={isActive ? theme.primary : theme.text + '80'} 
+          />
+        </View>
+        <Text
+          style={{
+            fontSize: 12,
+            fontWeight: isActive ? '600' : '500',
+            color: isActive ? theme.primary : theme.text + '80',
+          }}
+        >
+          {label}
+        </Text>
+      </Animated.View>
+    </Pressable>
+  );
+};
 
 export default function Index() {
   const [view, setView] = useState<AppView>('loading');
@@ -141,7 +218,9 @@ export default function Index() {
       case 'library':
         return <VideoLibraryScreen onNavigateBack={() => setActiveTab('home')} />;
       case 'friends':
-        return <FriendsScreen />;
+        return <FriendsScreen onNavigateBack={() => setActiveTab('home')} />;
+      case 'test':
+        return <VideoAnalysisTest onClose={() => setActiveTab('home')} />;
       default:
         return <HomeScreen onNavigateToLibrary={() => setActiveTab('library')} />;
     }
@@ -149,45 +228,61 @@ export default function Index() {
 
   const MainApp = () => (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
-      <View style={{ flex: 1 }}>
-        {renderContent()}
-      </View>
+      {renderContent()}
       
-      {/* Custom Tab Bar */}
-      <View style={{ 
+      {/* Bottom Navigation */}
+      <View style={{
         flexDirection: 'row',
-        height: 80,
         backgroundColor: colors.card,
+        paddingVertical: 8,
+        paddingHorizontal: 16,
         borderTopWidth: 1,
-        borderTopColor: colors.border,
+        borderTopColor: colors.border + '40',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: -4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+        elevation: 8,
       }}>
-        {['home', 'library', 'friends'].map(tab => (
-          <Pressable 
-            key={tab}
-            onPress={() => setActiveTab(tab)}
-            style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}
-          >
-            <Ionicons 
-              name={
-                tab === 'home' ? 'home' : 
-                tab === 'library' ? 'library' : 'people'
-              } 
-              size={24} 
-              color={activeTab === tab ? colors.primary : colors.text} 
-            />
-            <Text style={{ 
-              color: activeTab === tab ? colors.primary : colors.text, 
-              fontSize: 12,
-              marginTop: 4
-            }}>
-              {tab.charAt(0).toUpperCase() + tab.slice(1)}
-            </Text>
-          </Pressable>
-        ))}
+        <TabButton
+          tab="home"
+          isActive={activeTab === 'home'}
+          onPress={() => setActiveTab('home')}
+          icon="home"
+          label="Home"
+          theme={colors}
+        />
+        <TabButton
+          tab="library"
+          isActive={activeTab === 'library'}
+          onPress={() => setActiveTab('library')}
+          icon="videocam"
+          label="Library"
+          theme={colors}
+        />
+        <TabButton
+          tab="friends"
+          isActive={activeTab === 'friends'}
+          onPress={() => setActiveTab('friends')}
+          icon="people"
+          label="Friends"
+          theme={colors}
+        />
+        <TabButton
+          tab="test"
+          isActive={activeTab === 'test'}
+          onPress={() => setActiveTab('test')}
+          icon="flask"
+          label="Test"
+          theme={colors}
+        />
       </View>
-      
-      <LevelUpModal />
+
+      {/* XP Feedback Animation */}
       <XPFeedback />
+      
+      {/* Level Up Modal */}
+      <LevelUpModal />
     </View>
   );
 

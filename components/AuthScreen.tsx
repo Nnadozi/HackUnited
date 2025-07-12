@@ -1,10 +1,14 @@
 import { Ionicons } from '@expo/vector-icons';
 import * as AppleAuthentication from 'expo-apple-authentication';
+import * as Google from 'expo-auth-session/providers/google';
 import * as SecureStore from 'expo-secure-store';
+import * as WebBrowser from 'expo-web-browser';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, Platform, Pressable, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Alert, Platform, Pressable, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useThemeStore } from '../stores/themeStore';
+
+WebBrowser.maybeCompleteAuthSession();
 
 interface AuthScreenProps {
   onAuthComplete: (userInfo: any) => void;
@@ -13,14 +17,28 @@ interface AuthScreenProps {
 export default function AuthScreen({ onAuthComplete }: AuthScreenProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isAppleAvailable, setIsAppleAvailable] = useState(false);
-  const [showNameInput, setShowNameInput] = useState(false);
-  const [userName, setUserName] = useState('');
   const { isDark, colors, setThemeMode } = useThemeStore();
   const theme = colors;
+
+  // Google OAuth configuration
+  const [request, response, promptAsync] = Google.useAuthRequest({
+    // Web client ID - you'll need to get this from Google Cloud Console
+    // For now, using a placeholder - you'll need to replace this with your actual web client ID
+    webClientId: 'YOUR_WEB_CLIENT_ID.apps.googleusercontent.com',
+    iosClientId: 'YOUR_IOS_CLIENT_ID.apps.googleusercontent.com',
+    androidClientId: 'YOUR_ANDROID_CLIENT_ID.apps.googleusercontent.com',
+    scopes: ['profile', 'email'],
+  });
 
   useEffect(() => {
     checkAppleAuthAvailability();
   }, []);
+
+  useEffect(() => {
+    if (response?.type === 'success') {
+      handleGoogleAuthSuccess(response.authentication?.accessToken);
+    }
+  }, [response]);
 
   const checkAppleAuthAvailability = async () => {
     if (Platform.OS === 'ios') {
@@ -29,38 +47,57 @@ export default function AuthScreen({ onAuthComplete }: AuthScreenProps) {
     }
   };
 
-  const handleGoogleSignIn = async () => {
-    setShowNameInput(true);
-  };
-
-  const completeGoogleSignIn = async () => {
-    if (!userName.trim()) {
-      Alert.alert('Name Required', 'Please enter your name to continue.');
+  const handleGoogleAuthSuccess = async (accessToken: string | undefined) => {
+    if (!accessToken) {
+      Alert.alert('Error', 'Failed to get access token from Google');
       return;
     }
 
     setIsLoading(true);
     try {
-      // Generate a more realistic email from the name
-      const emailName = userName.toLowerCase().replace(/\s+/g, '.');
-      const mockUserInfo = {
-        id: `google_${Date.now()}`,
-        email: `${emailName}@gmail.com`,
-        name: userName.trim(),
+      // Fetch user info from Google
+      const userInfoResponse = await fetch('https://www.googleapis.com/userinfo/v2/me', {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+
+      if (!userInfoResponse.ok) {
+        throw new Error('Failed to fetch user info');
+      }
+
+      const googleUserInfo = await userInfoResponse.json();
+      
+      const userInfo = {
+        id: `google_${googleUserInfo.id}`,
+        email: googleUserInfo.email,
+        name: googleUserInfo.name,
         provider: 'google',
-        profilePicture: null,
+        profilePicture: googleUserInfo.picture,
       };
-      
+
       // Store user info securely
-      await SecureStore.setItemAsync('user_info', JSON.stringify(mockUserInfo));
-      await SecureStore.setItemAsync('auth_token', `google_token_${Date.now()}`);
+      await SecureStore.setItemAsync('user_info', JSON.stringify(userInfo));
+      await SecureStore.setItemAsync('auth_token', accessToken);
       
-      setShowNameInput(false);
-      setUserName('');
-      onAuthComplete(mockUserInfo);
+      onAuthComplete(userInfo);
     } catch (error) {
+      console.error('Google auth error:', error);
       Alert.alert('Sign In Error', 'Failed to sign in with Google. Please try again.');
     } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    setIsLoading(true);
+    try {
+      const result = await promptAsync();
+      if (result.type === 'cancel') {
+        setIsLoading(false);
+      }
+      // Success is handled in useEffect
+    } catch (error) {
+      console.error('Google sign in error:', error);
+      Alert.alert('Sign In Error', 'Failed to sign in with Google. Please try again.');
       setIsLoading(false);
     }
   };
@@ -111,121 +148,6 @@ export default function AuthScreen({ onAuthComplete }: AuthScreenProps) {
   const toggleTheme = () => {
     setThemeMode(isDark ? 'light' : 'dark');
   };
-
-  if (showNameInput) {
-    return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: theme.background }}>
-        <View style={{ flex: 1, justifyContent: 'center', paddingHorizontal: 32 }}>
-          <View style={{ alignItems: 'center', marginBottom: 48 }}>
-            <View 
-              style={{ 
-                width: 80, 
-                height: 80, 
-                borderRadius: 40, 
-                backgroundColor: theme.primary,
-                justifyContent: 'center',
-                alignItems: 'center',
-                marginBottom: 24,
-              }}
-            >
-              <Ionicons name="person" size={36} color="white" />
-            </View>
-            <Text style={{ 
-              fontSize: 28, 
-              fontWeight: '700', 
-              color: theme.text, 
-              marginBottom: 8,
-              textAlign: 'center'
-            }}>
-              What's your name?
-            </Text>
-            <Text style={{ 
-              fontSize: 16, 
-              color: theme.text, 
-              opacity: 0.7, 
-              textAlign: 'center',
-              lineHeight: 24
-            }}>
-              We'll use this to personalize your experience
-            </Text>
-          </View>
-
-          <View style={{ marginBottom: 32 }}>
-            <TextInput
-              style={{
-                height: 60,
-                borderRadius: 16,
-                backgroundColor: theme.card,
-                borderWidth: 1,
-                borderColor: theme.border,
-                paddingHorizontal: 20,
-                fontSize: 16,
-                color: theme.text,
-                marginBottom: 20
-              }}
-              placeholder="Enter your full name"
-              placeholderTextColor={theme.text + '80'}
-              value={userName}
-              onChangeText={setUserName}
-              autoFocus
-              returnKeyType="done"
-              onSubmitEditing={completeGoogleSignIn}
-            />
-
-            <Pressable
-              onPress={completeGoogleSignIn}
-              disabled={isLoading || !userName.trim()}
-              style={{
-                height: 60,
-                borderRadius: 16,
-                backgroundColor: theme.primary,
-                justifyContent: 'center',
-                alignItems: 'center',
-                opacity: (isLoading || !userName.trim()) ? 0.5 : 1,
-                marginBottom: 16
-              }}
-            >
-              {isLoading ? (
-                <ActivityIndicator size="small" color="white" />
-              ) : (
-                <Text style={{ 
-                  fontSize: 16, 
-                  fontWeight: '600', 
-                  color: 'white' 
-                }}>
-                  Continue with Google
-                </Text>
-              )}
-            </Pressable>
-
-            <Pressable
-              onPress={() => {
-                setShowNameInput(false);
-                setUserName('');
-              }}
-              style={{
-                height: 60,
-                borderRadius: 16,
-                backgroundColor: theme.card,
-                borderWidth: 1,
-                borderColor: theme.border,
-                justifyContent: 'center',
-                alignItems: 'center',
-              }}
-            >
-              <Text style={{ 
-                fontSize: 16, 
-                fontWeight: '600', 
-                color: theme.text 
-              }}>
-                Back
-              </Text>
-            </Pressable>
-          </View>
-        </View>
-      </SafeAreaView>
-    );
-  }
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: theme.background }}>
@@ -349,7 +271,7 @@ export default function AuthScreen({ onAuthComplete }: AuthScreenProps) {
           {/* Google Sign In */}
           <Pressable
             onPress={handleGoogleSignIn}
-            disabled={isLoading}
+            disabled={isLoading || !request}
             style={{
               flexDirection: 'row',
               alignItems: 'center',
@@ -359,7 +281,7 @@ export default function AuthScreen({ onAuthComplete }: AuthScreenProps) {
               backgroundColor: theme.card,
               borderWidth: 1,
               borderColor: theme.border,
-              opacity: isLoading ? 0.7 : 1,
+              opacity: (isLoading || !request) ? 0.7 : 1,
               shadowColor: '#000',
               shadowOffset: { width: 0, height: 4 },
               shadowOpacity: 0.1,
@@ -389,8 +311,22 @@ export default function AuthScreen({ onAuthComplete }: AuthScreenProps) {
           </Pressable>
         </View>
 
+        {/* Setup Instructions */}
+        <View style={{ marginTop: 32, alignItems: 'center' }}>
+          <Text style={{ 
+            fontSize: 14, 
+            color: theme.text, 
+            opacity: 0.6, 
+            textAlign: 'center',
+            lineHeight: 20
+          }}>
+            To use Google Sign-In, you'll need to configure{'\n'}
+            your Google Cloud Console credentials
+          </Text>
+        </View>
+
         {/* Footer */}
-        <View style={{ marginTop: 48, alignItems: 'center' }}>
+        <View style={{ marginTop: 32, alignItems: 'center' }}>
           <Text style={{ 
             fontSize: 14, 
             color: theme.text, 

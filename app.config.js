@@ -10,7 +10,8 @@ export default {
     plugins: [
       ...(appJson.expo?.plugins || []),
       'expo-secure-store',
-      'expo-apple-authentication'
+      'expo-apple-authentication',
+      'expo-web-browser'
     ],
     android: {
       package: IS_DEV ? 'com.nnadozi.clarity.dev' : 'com.nnadozi.clarity',
