@@ -1,5 +1,6 @@
 # Clarity - Video Quality Tracking App
 View Submission: https://devpost.com/software/clarify-02qhgp
+Demo: https://youtu.be/qfEjSKSDZOQ
 
 ## Inspiration
 Many people often spend their time doomscrolling or watching videos on large platforms such as Instagram and YouTube. Unfortunately, they waste large amounts of their time watching low-quality or brainrot videos that could be better spent doing productive things, such as working on their projects or even going out to touch grass. Because of that, this app is built to stop these bad habits in their tracks and incentivise users to be aware of the entertainment they watch and reduce how much content dominates their lives. 
