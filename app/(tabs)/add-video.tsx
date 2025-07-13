@@ -239,6 +239,11 @@ export default function AddVideoScreen() {
         analysis_reason: analysisResult.analysis_reason,
         tags: analysisResult.tags,
         detailed_analysis: analysisResult.detailed_analysis,
+        mood_analysis: analysisResult.mood_analysis,
+        content_insights: analysisResult.content_insights,
+        learning_objectives: analysisResult.learning_objectives,
+        content_warnings: analysisResult.content_warnings,
+        recommendations: analysisResult.recommendations,
         scraped_data: undefined,
         created_at: new Date().toISOString()
       };
