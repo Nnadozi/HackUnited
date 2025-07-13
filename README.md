@@ -10,7 +10,7 @@ People often spend their time scrolling or watching videos. Unfortunately, they 
 Clarity is an XP-based progressive system; there are 5 levels in this app. The more XP you get, the higher your level is. Every video will be given 1-4 XP based on the video quality. This means that if you have a higher level, you have more knowledge from watching educational videos. Every day, Clarity will remove 2 videos, so it will not be easy to reach level 5
 
 ## How we built it
-We built this app using react-native/Expo. To get the YouTube video properties, we use web scraping to get all the video properties like the description, title, thumbnail, duration, and views. After that, we use an advanced categorization like this.
+We built this app using React Native, Expo, TypeScript, and Supabase. To get the YouTube video properties, we use web scraping to get all the video properties like the description, title, thumbnail, duration, and views. After that, we use an advanced categorization like this.
 
 - Educational Content: Tutorials, courses, academic content (+3 XP)
 - Productivity Content: Tips, business advice, self-improvement (+2 XP)
@@ -34,3 +34,18 @@ Our app doesn't end up here; there are still many features that need some improv
 - Better video recognition.
 - More user interaction using the friends feature.
 - More fun ways to earn XP
+
+## Installation and Setup Instructions
+
+Clone down this repository. You will need `node` and `npm` installed globally on your machine.  
+
+Installation:
+
+`npm install`  
+
+To Run Test Suite:  
+
+`npx expo start` 
+
+To Visit App: Scan the QR from the console with the Expo Go App
+
