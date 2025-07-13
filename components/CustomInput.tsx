@@ -15,9 +15,11 @@ interface CustomInputProps {
     returnKeyType?: 'done' | 'go' | 'next' | 'search' | 'send';
     editable?: boolean;
     textAlign?: 'left' | 'right' | 'center';
+    secureTextEntry?: boolean;
+    placeholderTextColor?: string;
 }
 
-const CustomInput = ({placeholder, value, onChangeText, style, width, maxLength, keyboardType, multiline, numberOfLines, onSubmitEditing, returnKeyType, editable, textAlign}:CustomInputProps) => {
+const CustomInput = ({placeholder, value, onChangeText, style, width, maxLength, keyboardType, multiline, numberOfLines, onSubmitEditing, returnKeyType, editable, textAlign, secureTextEntry, placeholderTextColor}:CustomInputProps) => {
   const {colors} = useThemeStore();
   return (
     <TextInput
@@ -28,29 +30,30 @@ const CustomInput = ({placeholder, value, onChangeText, style, width, maxLength,
       { width: width || '100%' },
       {color: colors.text},
       {borderColor: colors.border},
-      {textAlign: textAlign || 'left'}
+      {backgroundColor: colors.background}
     ]}
-    placeholderTextColor={"darkgray"}
-    maxLength={maxLength ?? 100}
-    cursorColor={colors.text}
+    placeholderTextColor={placeholderTextColor || colors.text + '60'}
+    maxLength={maxLength}
     keyboardType={keyboardType}
     multiline={multiline}
-    numberOfLines={multiline ? (numberOfLines || 3) : undefined}
-    textAlignVertical={multiline ? "top" : "center"}
+    numberOfLines={numberOfLines}
     onSubmitEditing={onSubmitEditing}
     returnKeyType={returnKeyType}
     editable={editable}
+    textAlign={textAlign}
+    secureTextEntry={secureTextEntry}
     />
-  )
-}
-
-export default CustomInput
+  );
+};
 
 const styles = StyleSheet.create({
-    input:{
-        borderWidth: 1,
-        padding: 15,
-        borderRadius: 10,
-        marginVertical: 5,
-    }
-})
+  input: {
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    fontSize: 16,
+  },
+});
+
+export default CustomInput;

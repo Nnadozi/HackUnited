@@ -18,12 +18,23 @@ const LEVEL_ICONS = [
   { name: 'emoji-emotions', type: 'material' },       // Level 4
   { name: 'emoji-emotions', type: 'material' },    // Level 5
 ];
+
+// Face icons based on recent video quality
+const QUALITY_FACE_ICONS = {
+  excellent: { name: 'emoji-emotions', type: 'material' },    // 80-100% quality
+  happy: { name: 'emoji-happy', type: 'entypo' },            // 60-79% quality
+  neutral: { name: 'emoji-neutral', type: 'entypo' },        // 40-59% quality
+  concerned: { name: 'emoji-flirt', type: 'entypo' },        // 20-39% quality (concerned face)
+  sad: { name: 'emoji-sad', type: 'entypo' },                // 0-19% quality
+};
+
 const XP_REQUIREMENTS = [5, 10, 20, 35, 50, 75];
 
 export default function HomeScreen() {
   const { colors } = useThemeStore();
   const [settingsVisible, setSettingsVisible] = useState(false);
   const videos = useUserStore((s) => s.videos);
+  const user = useUserStore((s) => s.user);
   const currentLevel = useUserStore((s) => s.currentLevel);
   const currentXP = useUserStore((s) => s.currentXP);
   const router = useRouter();
@@ -34,16 +45,36 @@ export default function HomeScreen() {
   const progress = nextLevelXP > 0 ? currentXP / nextLevelXP : 1;
   const xpRemaining = nextLevelXP - currentXP;
 
+  // Calculate face icon based on recent video quality
+  const getQualityBasedFaceIcon = () => {
+    const recentVideosForAnalysis = videos.slice(0, 5); // Last 5 videos
+    
+    if (recentVideosForAnalysis.length === 0) {
+      return LEVEL_ICONS[currentLevel] || QUALITY_FACE_ICONS.neutral;
+    }
+    
+    const avgQuality = recentVideosForAnalysis.reduce((sum, video) => 
+      sum + (video.quality_score || 50), 0) / recentVideosForAnalysis.length;
+    
+    if (avgQuality >= 80) return QUALITY_FACE_ICONS.excellent;
+    if (avgQuality >= 60) return QUALITY_FACE_ICONS.happy;
+    if (avgQuality >= 40) return QUALITY_FACE_ICONS.neutral;
+    if (avgQuality >= 20) return QUALITY_FACE_ICONS.concerned;
+    return QUALITY_FACE_ICONS.sad;
+  };
+
+  const currentFaceIcon = getQualityBasedFaceIcon();
+
   return (
-    <Page style={{justifyContent: 'flex-start'}}>
-      <CustomText style={{marginBottom: 15}} fontSize="large" opacity={0.5} bold>Home</CustomText>
+    <Page style={{justifyContent: 'flex-start', alignItems: 'center'}}>
+      <CustomText style={{marginBottom: 15}} fontSize="large" opacity={0.5} bold>Hi, {user?.name}</CustomText>
       <Pressable style={styles.settingsBtn} onPress={() => setSettingsVisible(true)}>
         <CustomIcon primary name="settings" type="feather" size={30}/>
       </Pressable>
       <View style={[styles.faceCon,{backgroundColor: colors.card, borderColor: colors.border}]}> 
         <CustomIcon
-          name={LEVEL_ICONS[currentLevel]?.name || 'emoji-sad'}
-          type={LEVEL_ICONS[currentLevel]?.type as any}
+          name={currentFaceIcon?.name || 'emoji-sad'}
+          type={currentFaceIcon?.type as any}
           size={90}
           primary
           style={{ alignSelf: 'center' }}
@@ -67,9 +98,7 @@ export default function HomeScreen() {
               recentVideos.map((video) => (
                 <VideoPreview
                   key={video.id}
-                  title={video.title}
-                  xp={video.xp_awarded}
-                  thumbnailUrl={video.thumbnailUrl}
+                  video={video}
                   onDelete={() => removeVideo(video.id)}
                 />
               ))

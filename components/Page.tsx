@@ -29,8 +29,6 @@ export default Page
 const styles = StyleSheet.create({
     con:{
         flex:1,
-        justifyContent:"center",
-        alignItems:"center",
         backgroundColor:"white"
     }
 })

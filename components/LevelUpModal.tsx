@@ -7,14 +7,58 @@ import { useUserStore } from '../stores/userStore';
 import CustomText from './CustomText';
 
 export const LevelUpModal = () => {
-  const { justLeveledUp, resetLevelUp, currentLevel, user } = useUserStore();
+  const { justLeveledUp, resetLevelUp, currentLevel, user, videos } = useUserStore();
   const { colors } = useThemeStore();
   
   const scaleAnim = useRef(new Animated.Value(0.5)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
+  const starRotateAnim = useRef(new Animated.Value(0)).current;
+  const pulseAnim = useRef(new Animated.Value(1)).current;
+
+  // Get recent video quality to determine animation intensity
+  const getRecentVideoQuality = () => {
+    const recentVideos = videos.slice(0, 3);
+    if (recentVideos.length === 0) return 2;
+    
+    const avgQuality = recentVideos.reduce((sum, video) => 
+      sum + (video.quality_score || 50), 0) / recentVideos.length;
+    
+    return Math.floor(avgQuality / 25); // 0-4 scale
+  };
+
+  const qualityLevel = getRecentVideoQuality();
+  const isHighQuality = qualityLevel >= 3; // Quality 3-4
 
   useEffect(() => {
     if (justLeveledUp) {
+      // Enhanced animations for high quality videos
+      if (isHighQuality) {
+        // Star rotation animation
+        Animated.loop(
+          Animated.timing(starRotateAnim, {
+            toValue: 1,
+            duration: 2000,
+            useNativeDriver: true,
+          })
+        ).start();
+
+        // Pulse animation
+        Animated.loop(
+          Animated.sequence([
+            Animated.timing(pulseAnim, {
+              toValue: 1.1,
+              duration: 500,
+              useNativeDriver: true,
+            }),
+            Animated.timing(pulseAnim, {
+              toValue: 1,
+              duration: 500,
+              useNativeDriver: true,
+            }),
+          ])
+        ).start();
+      }
+
       Animated.sequence([
         Animated.timing(opacityAnim, {
           toValue: 1,
@@ -23,17 +67,24 @@ export const LevelUpModal = () => {
         }),
         Animated.spring(scaleAnim, {
           toValue: 1,
-          friction: 4,
+          friction: isHighQuality ? 3 : 4, // More bouncy for high quality
           useNativeDriver: true,
         }),
       ]).start();
     } else {
       opacityAnim.setValue(0);
       scaleAnim.setValue(0.5);
+      starRotateAnim.setValue(0);
+      pulseAnim.setValue(1);
     }
-  }, [justLeveledUp]);
+  }, [justLeveledUp, isHighQuality]);
 
   if (!justLeveledUp) return null;
+
+  const starRotation = starRotateAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '360deg'],
+  });
 
   return (
     <Modal visible transparent animationType="none">
@@ -44,18 +95,39 @@ export const LevelUpModal = () => {
             { 
               backgroundColor: colors.background,
               transform: [{ scale: scaleAnim }],
-              opacity: opacityAnim
+              opacity: opacityAnim,
+              borderColor: isHighQuality ? '#FFD700' : colors.primary,
             }
           ]}
         >
-          <Ionicons name="star" size={80} color="#FFD700" style={styles.starIcon} />
+          <Animated.View
+            style={{
+              transform: [
+                { rotate: isHighQuality ? starRotation : '0deg' },
+                { scale: pulseAnim }
+              ],
+            }}
+          >
+            <Ionicons 
+              name="star" 
+              size={isHighQuality ? 100 : 80} 
+              color="#FFD700" 
+              style={styles.starIcon} 
+            />
+          </Animated.View>
           
           <CustomText 
             fontSize="XL"
             bold
-            style={{ color: colors.primary, marginBottom: 8 }}
+            style={{ 
+              color: isHighQuality ? '#FFD700' : colors.primary, 
+              marginBottom: 8,
+              textShadowColor: isHighQuality ? 'rgba(255, 215, 0, 0.5)' : 'transparent',
+              textShadowOffset: { width: 0, height: 2 },
+              textShadowRadius: 4,
+            }}
           >
-            LEVEL UP!
+            {isHighQuality ? '🎉 AMAZING LEVEL UP! 🎉' : 'LEVEL UP!'}
           </CustomText>
           <CustomText 
             fontSize="normal"
@@ -66,30 +138,68 @@ export const LevelUpModal = () => {
           <CustomText 
             fontSize="large"
             bold
-            style={{ color: colors.text, marginBottom: 24 }}
+            style={{ color: colors.text, marginBottom: 8 }}
           >
             You've reached Level {currentLevel}!
           </CustomText>
           
+          {isHighQuality && (
+            <CustomText 
+              fontSize="small"
+              style={{ 
+                color: '#FFD700', 
+                marginBottom: 16,
+                textAlign: 'center',
+                fontStyle: 'italic'
+              }}
+            >
+              Your high-quality video choices are paying off! 🌟
+            </CustomText>
+          )}
+          
           <Pressable 
             onPress={resetLevelUp} 
-            style={[styles.button, { backgroundColor: colors.primary }]}
+            style={[
+              styles.button, 
+              { 
+                backgroundColor: isHighQuality ? '#FFD700' : colors.primary,
+                shadowColor: isHighQuality ? '#FFD700' : colors.primary,
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.3,
+                shadowRadius: 8,
+                elevation: 8,
+              }
+            ]}
           >
             <CustomText 
               fontSize="normal"
               bold
-              style={{ color: 'white' }}
+              style={{ color: isHighQuality ? '#000' : 'white' }}
             >
-              Keep Going!
+              {isHighQuality ? 'Keep Excelling!' : 'Keep Going!'}
             </CustomText>
           </Pressable>
         </Animated.View>
+        
+        {/* Enhanced confetti for high quality */}
         <ConfettiCannon 
-          count={200} 
+          count={isHighQuality ? 300 : 200} 
           origin={{ x: -10, y: 0 }} 
-          explosionSpeed={400} 
-          fallSpeed={3000}
+          explosionSpeed={isHighQuality ? 500 : 400} 
+          fallSpeed={isHighQuality ? 2500 : 3000}
+          colors={isHighQuality ? ['#FFD700', '#FFA500', '#FF6347', '#FF1493', '#00CED1'] : undefined}
         />
+        
+        {/* Additional confetti from right side for high quality */}
+        {isHighQuality && (
+          <ConfettiCannon 
+            count={150} 
+            origin={{ x: 400, y: 0 }} 
+            explosionSpeed={450} 
+            fallSpeed={2800}
+            colors={['#FFD700', '#FFA500', '#FF6347']}
+          />
+        )}
       </View>
     </Modal>
   );

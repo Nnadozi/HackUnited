@@ -2,18 +2,45 @@ import CustomButton from '@/components/CustomButton';
 import CustomInput from '@/components/CustomInput';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { Alert, Image, StyleSheet, View } from 'react-native';
+import { Alert, Clipboard, Image, StyleSheet, View } from 'react-native';
 import CustomText from '../../components/CustomText';
 import Page from '../../components/Page';
 import VideoAddConfirmationModal from '../../components/VideoAddConfirmationModal';
+import { videoAnalysisService } from '../../lib/supabaseService';
 import { useThemeStore } from '../../stores/themeStore';
 import { useUserStore } from '../../stores/userStore';
+import { extractPlatformFromUrl } from '../../utils/videoAnalysis';
 
-const key = process.env.EXPO_PUBLIC_OPENAI_KEY;
+function getVideoId(url: string, platform: string): string | null {
+  switch (platform) {
+    case 'youtube':
+      const youtubeMatch = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/|shorts\/))([\w-]{11})/);
+      return youtubeMatch ? youtubeMatch[1] : null;
+    case 'instagram':
+      const instagramMatch = url.match(/instagram\.com\/(?:p|reel|tv)\/([^\/\?]+)/);
+      return instagramMatch ? instagramMatch[1] : null;
+    case 'tiktok':
+      const tiktokMatch = url.match(/tiktok\.com\/@[^\/]+\/video\/(\d+)/);
+      return tiktokMatch ? tiktokMatch[1] : null;
+    default:
+      return null;
+  }
+}
 
-function getYouTubeId(url: string): string | null {
-  const match = url.match(/(?:youtu.be\/|youtube.com\/(?:watch\?v=|embed\/|v\/|shorts\/))([\w-]{11})/);
-  return match ? match[1] : null;
+function getThumbnailUrl(url: string, platform: string): string | undefined {
+  const videoId = getVideoId(url, platform);
+  if (!videoId) return undefined;
+
+  switch (platform) {
+    case 'youtube':
+      return `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+    case 'instagram':
+      return `https://www.instagram.com/p/${videoId}/media/?size=l`;
+    case 'tiktok':
+      return `https://p16-sign-va.tiktokcdn.com/obj/tos-maliva-p-0068/${videoId}`;
+    default:
+      return undefined;
+  }
 }
 
 export default function AddVideoScreen() {
@@ -22,23 +49,52 @@ export default function AddVideoScreen() {
   const router = useRouter();
   const [url, setUrl] = useState('');
   const [loading, setLoading] = useState(false);
+  const [loadingStep, setLoadingStep] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [title, setTitle] = useState('');
   const [xpGiven, setXpGiven] = useState<number | null>(null);
   const [xpReason, setXpReason] = useState<string>('');
   const addVideo = useUserStore((s) => s.addVideo);
+  const userLevel = useUserStore((s) => s.user?.currentLevel || 1);
 
-  const youTubeId = getYouTubeId(url);
-  const thumbnail = youTubeId ? `https://img.youtube.com/vi/${youTubeId}/hqdefault.jpg` : undefined;
+  const platform = extractPlatformFromUrl(url);
+  const videoId = getVideoId(url, platform);
+  const thumbnail = getThumbnailUrl(url, platform);
 
-  // Optionally fetch the video title from YouTube oEmbed
-  const fetchTitle = async (videoUrl: string) => {
+  // Fetch video title from various platforms
+  const fetchTitle = async (videoUrl: string, platform: string) => {
     try {
-      const res = await fetch(`https://www.youtube.com/oembed?url=${encodeURIComponent(videoUrl)}&format=json`);
-      if (!res.ok) return '';
-      const data = await res.json();
-      return data.title || '';
+      switch (platform) {
+        case 'youtube':
+          const res = await fetch(`https://www.youtube.com/oembed?url=${encodeURIComponent(videoUrl)}&format=json`);
+          if (!res.ok) return '';
+          const data = await res.json();
+          return data.title || '';
+        case 'instagram':
+          // For Instagram, we'll try to scrape the caption from the page
+          try {
+            const response = await fetch(videoUrl);
+            const html = await response.text();
+            // Look for caption in meta tags or structured data
+            const captionMatch = html.match(/<meta property="og:description" content="([^"]+)"/);
+            if (captionMatch) {
+              const caption = captionMatch[1];
+              // Get first line of caption
+              const firstLine = caption.split('\n')[0];
+              return firstLine || `Instagram Post ${videoId}`;
+            }
+            return `Instagram Post ${videoId}`;
+          } catch {
+            return `Instagram Post ${videoId}`;
+          }
+        case 'tiktok':
+          // TikTok doesn't have a public oEmbed API, so we'll extract from URL
+          const tiktokMatch = videoUrl.match(/tiktok\.com\/@([^\/]+)\/video\/(\d+)/);
+          return tiktokMatch ? `TikTok Video by @${tiktokMatch[1]}` : '';
+        default:
+          return '';
+      }
     } catch {
       return '';
     }
@@ -47,73 +103,103 @@ export default function AddVideoScreen() {
   const handleUrlChange = async (val: string) => {
     setUrl(val);
     setError('');
-    if (getYouTubeId(val)) {
-      const fetchedTitle = await fetchTitle(val);
+    const platform = extractPlatformFromUrl(val);
+    if (getVideoId(val, platform)) {
+      const fetchedTitle = await fetchTitle(val, platform);
       setTitle(fetchedTitle);
     } else {
       setTitle('');
     }
   };
 
-  const validateUrl = (val: string) => !!getYouTubeId(val);
+  const handlePasteFromClipboard = async () => {
+    try {
+      const clipboardContent = await Clipboard.getString();
+      if (clipboardContent && clipboardContent.trim()) {
+        setUrl(clipboardContent);
+        handleUrlChange(clipboardContent);
+      } else {
+        Alert.alert('Clipboard Empty', 'There is no content in your clipboard to paste.');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to paste from clipboard');
+    }
+  };
+
+  const validateUrl = (val: string) => {
+    const platform = extractPlatformFromUrl(val);
+    return !!getVideoId(val, platform);
+  };
 
   const handleAdd = async () => {
     if (!validateUrl(url)) {
-      Alert.alert('Invalid URL', 'Please enter a valid YouTube URL.');
+      Alert.alert('Invalid URL', 'Please enter a valid YouTube, Instagram, or TikTok URL.');
       return;
     }
+    
     setLoading(true);
     setError('');
+    setLoadingStep('Analyzing video content...');
+    
     try {
-      // Use OpenAI API to judge video quality (1-4 XP, 1=brainrot, 4=best)
-      let xp_awarded = 2;
-      let reason = '';
-      if (key) {
-        const prompt = `Rate the following YouTube video title for productivity and educational value. Reply ONLY with a JSON object: {"xp": 1-4, "reason": "..."} where 1 is most brainrot and 4 is most productive/educational. Title: ${title || url}`;
-        const response = await fetch('https://api.openai.com/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${key}`,
-          },
-          body: JSON.stringify({
-            model: 'gpt-4o-mini',
-            messages: [
-              { role: 'system', content: 'You are a productivity assistant.' },
-              { role: 'user', content: prompt },
-            ],
-            max_tokens: 60,
-            temperature: 0.2,
-          }),
-        });
-        const data = await response.json();
-        let aiReply = data.choices?.[0]?.message?.content || '';
-        try {
-          // Try to parse JSON from AI reply
-          const match = aiReply.match(/\{[\s\S]*\}/);
-          if (match) aiReply = match[0];
-          const parsed = JSON.parse(aiReply);
-          if (typeof parsed.xp === 'number' && parsed.xp >= 1 && parsed.xp <= 4) xp_awarded = parsed.xp;
-          if (typeof parsed.reason === 'string') reason = parsed.reason;
-        } catch {
-          reason = aiReply;
-        }
-      }
-      addVideo({
+      // Extract platform and scrape data
+      const platform = extractPlatformFromUrl(url);
+      
+      // Let the server-side edge function handle all scraping to avoid CORS issues
+      setLoadingStep('Running AI analysis...');
+      
+      // Use the edge function for AI analysis (server will handle scraping)
+      const analysisResult = await videoAnalysisService.analyzeVideo({
+        url,
+        title: title || '',
+        description: '',
+        channel_name: '',
+        hashtags: [],
+        platform,
+        user_level: userLevel
+      });
+
+      // Log the AI analysis result
+      console.log('🎯 AI Analysis Result:', JSON.stringify(analysisResult, null, 2));
+
+      setLoadingStep('Saving video...');
+
+      // Create video object with adjusted XP
+      const videoData = {
         title: title || url,
-        xp_awarded,
+        xp_awarded: analysisResult.xp_awarded || 0,
         url,
         thumbnailUrl: thumbnail,
-      });
-      setXpGiven(xp_awarded);
-      setXpReason(reason);
-      setUrl('');
-      setTitle('');
+        platform,
+        duration: undefined,
+        views: undefined,
+        likes: undefined,
+        comments: Math.floor(Math.random() * 5000) + 10,
+        quality_score: analysisResult.quality_score,
+        category: analysisResult.category,
+        analysis_reason: analysisResult.analysis_reason,
+        tags: analysisResult.tags,
+        detailed_analysis: analysisResult.detailed_analysis,
+        scraped_data: undefined,
+        created_at: new Date().toISOString()
+      };
+
+      console.log('💾 Saving video data:', JSON.stringify(videoData, null, 2));
+
+      addVideo(videoData);
+      
+      setXpGiven(analysisResult.xp_awarded || 0);
+      setXpReason(analysisResult.analysis_reason);
+      // Don't reset URL and title - keep preview visible until user pastes another URL
+      // setUrl('');
+      // setTitle('');
       setSuccess(true);
     } catch (e) {
+      console.error('❌ Error adding video:', e);
       Alert.alert('Failed to add video', 'Please try again.');
     } finally {
       setLoading(false);
+      setLoadingStep('');
     }
   };
 
@@ -123,11 +209,28 @@ export default function AddVideoScreen() {
     setXpReason('');
   };
 
+  const getPlatformIcon = (platform: string) => {
+    switch (platform) {
+      case 'youtube': return '🎥';
+      case 'instagram': return '📷';
+      case 'tiktok': return '🎵';
+      default: return '📺';
+    }
+  };
+
   return (
-    <Page style={{ alignItems: 'flex-start', justifyContent: 'flex-start' }}>  
-      <CustomText style={{alignSelf: 'center'}} fontSize="large" bold opacity={0.75}>Add Video</CustomText>
+    <Page style={{ justifyContent: 'flex-start', paddingHorizontal: 20 }}>  
+      <CustomText style={{alignSelf: 'flex-start'}} fontSize="large" bold opacity={0.75}>Add Video</CustomText>
+      
       <View style={[styles.card,{backgroundColor: colors.card, borderColor: colors.border}]}> 
-        <CustomText opacity={0.5}  style={{marginBottom: 10, alignSelf: 'center'}}>Video Preview</CustomText>
+        <CustomText opacity={0.5} style={{marginBottom: 10, alignSelf: 'center'}}>Video Preview</CustomText>
+        
+        {platform && (
+          <View style={[styles.platformBadge, { backgroundColor: theme.tagBackground, borderColor: theme.tagBorder }]}>
+            <CustomText fontSize="small" bold style={{ color: theme.tagText }}>{getPlatformIcon(platform)} {platform.toUpperCase()}</CustomText>
+          </View>
+        )}
+        
         <View style={[styles.previewThumb,{backgroundColor: colors.border}]}> 
           {thumbnail ? (
             <Image source={{ uri: thumbnail }} style={{ width: '100%', height: 100, borderRadius: 10 }} resizeMode="cover" />
@@ -139,20 +242,43 @@ export default function AddVideoScreen() {
           <CustomText primary fontSize='small' bold numberOfLines={2} textAlign='center' opacity={0.75}>{title || 'Video Title Here...'}</CustomText>
         )}
       </View>
-      <CustomInput
-        placeholder="Video URL"
-        value={url}
-        onChangeText={handleUrlChange}
-        style={{marginTop: 15}}
-      />
+      
+      <View style={styles.inputContainer}>
+        <View style={styles.inputWrapper}>
+          <CustomInput
+            placeholder="Video URL (YouTube, Instagram, TikTok)"
+            value={url}
+            onChangeText={handleUrlChange}
+            style={{
+              ...styles.urlInput,
+              color: colors.text,
+              backgroundColor: colors.background,
+              borderColor: colors.border 
+            }}
+            width="100%"
+            placeholderTextColor={colors.text + '80'}
+          />
+        </View>
+        <CustomButton
+          title="Paste"
+          onPress={handlePasteFromClipboard}
+          style={styles.pasteButton}
+          width={90}
+        />
+      </View>
+      
       <CustomButton
-        title="Add"
+        title={loading ? loadingStep : "Add Video"}
         onPress={handleAdd}
         disabled={loading}
         isLoading={loading}
         style={{marginTop: 10}}
       />
-      <CustomText primary bold fontSize="small" opacity={0.75} style={{marginTop: 10,marginLeft: 10}}>Let's see what you've got!</CustomText>
+      
+      <CustomText primary bold fontSize="small" opacity={0.75} style={{marginTop: 10,marginLeft: 10}}>
+        Supported platforms: YouTube, Instagram, TikTok
+      </CustomText>
+      
       <VideoAddConfirmationModal
         visible={success}
         xpGiven={xpGiven}
@@ -168,41 +294,59 @@ const styles = StyleSheet.create({
   videoThumb: { width: '100%', height: 100, borderRadius: 8, backgroundColor: '#fff', marginBottom: 8, alignItems: 'center', justifyContent: 'center' },
   videoTitle: { backgroundColor: '#fff', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 8, width: '100%', marginTop: 8 },
   urlLabel: { marginTop: 32, marginBottom: 8, alignSelf: 'center' },
-  urlInput: { width: '90%', backgroundColor: '#fff', borderRadius: 16, paddingHorizontal: 16, paddingVertical: 12, fontSize: 16, marginBottom: 24 },
   addBtn: { width: '90%', backgroundColor: '#2EC4F1', borderRadius: 16, paddingVertical: 18, alignItems: 'center', position: 'absolute', bottom: 200, alignSelf: 'center' },
   card: {
     width: '100%',
     alignSelf: 'center',
     borderRadius: 20, 
-    padding:15, 
-    marginTop: 10,
+    padding: 20, 
+    marginTop: 15,
     alignItems: 'center',
     shadowColor: '#000', 
-    shadowOpacity: 0.06, 
-    shadowRadius: 8, 
-    elevation: 2, 
-    borderWidth: 1,
+    shadowOpacity: 0.08, 
+    shadowRadius: 10, 
+    elevation: 4, 
+    borderWidth: 0,
   },
   previewThumb: {
     width: '100%',
-    height: 100,
-    borderRadius: 10,
-    marginBottom: 10,
+    height: 120,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
+    marginBottom: 10,
   },
-  input: {
-    width: '100%',
-    backgroundColor: '#f0f0f0',
+  platformBadge: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
     borderRadius: 12,
-    paddingHorizontal: 15,
-    paddingVertical: 12,
-    fontSize: 16,
-    marginBottom: 15,
     borderWidth: 1,
-    borderColor: '#ddd',
   },
-  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.2)', justifyContent: 'center', alignItems: 'center' },
-  modalContent: { backgroundColor: '#fff', borderRadius: 20, padding: 24, alignItems: 'center', width: 280 },
-  modalBtn: { borderRadius: 12, paddingHorizontal: 24, paddingVertical: 10, minWidth: 80, alignItems: 'center' },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '100%',
+    marginTop: 20,
+    gap: 8,
+  },
+  inputWrapper: {
+    flex: 1,
+  },
+  urlInput: {
+    minHeight: 50,
+    fontSize: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  pasteButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    minWidth: 70,
+    height: 50,
+  },
 }); 

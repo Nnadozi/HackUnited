@@ -25,13 +25,17 @@ export default function SettingsModal({ visible, onClose }: { visible: boolean; 
   const handleDeleteAccount = () => {
     Alert.alert('Delete Account', 'Are you sure you want to delete your account? This action is irreversible.', [
       { text: 'Cancel', style: 'cancel' },
-      { text: 'Delete', style: 'destructive', onPress: () => {
-        useUserStore.getState().deleteAccount();
-        setThemeMode('system');
-        onClose();
+      { text: 'Delete', style: 'destructive', onPress: async () => {
+        try {
+          await useUserStore.getState().deleteAccount();
+          setThemeMode('system');
+          onClose();
+        } catch (error) {
+          console.error('Error deleting account:', error);
+          onClose();
+        }
       } },
     ]);
-    onClose();
   };
 
   const handleThemeChange = (selectedIndex: number) => {

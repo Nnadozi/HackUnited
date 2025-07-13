@@ -1,13 +1,17 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Tabs, useRouter, useSegments } from "expo-router";
 import React from "react";
-import { Dimensions, Pressable, StyleSheet, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
+import { LevelUpModal } from "../../components/LevelUpModal";
+import { GlobalXPFeedback } from "../../components/XPFeedback";
 import { useThemeStore } from "../../stores/themeStore";
 
 const TAB_ITEMS = [
   { name: "home", icon: "home", route: "/(tabs)/home" },
   { name: "videos", icon: "videocam", route: "/(tabs)/videos" },
   { name: "add-video", icon: "add-circle", route: "/(tabs)/add-video" },
+  { name: "friends", icon: "people", route: "/(tabs)/friends" },
+  { name: "leaderboard", icon: "trophy", route: "/(tabs)/leaderboard" },
 ];
 
 export default function TabsLayout() {
@@ -31,27 +35,43 @@ export default function TabsLayout() {
               ]}>
                 <View style={[
                   styles.tabBar,
-                  {shadowColor: colors.primary},
-                  { borderRadius: 32, borderWidth: 2, borderColor: theme.primary },
                   { backgroundColor: theme.background },
                 ]}>
                   {TAB_ITEMS.map((tab, idx) => {
                     const focused = currentRoute === tab.name;
+                    const isAddButton = tab.name === 'add-video';
                     return (
                       <Pressable
                         key={tab.name}
                         onPress={() => router.replace(tab.route as any)}
                         style={[
                           styles.tabButton,
-                          focused
-                            ? { backgroundColor: theme.background, borderColor: theme.background }
-                            : { backgroundColor: theme.background, borderColor: theme.background },
+                          {
+                            backgroundColor: focused ? theme.primary : "transparent",
+                          },
+                          isAddButton && styles.addButton,
+                          isAddButton && {
+                            shadowColor: theme.primary,
+                          },
+                          focused &&
+                            isAddButton && {
+                              borderWidth: 3,
+                              borderColor: "white",
+                              shadowOpacity: 0.5,
+                              shadowRadius: 12,
+                            },
                         ]}
                       >
                         <Ionicons
                           name={tab.icon as any}
-                          size={30}
-                          color={focused ? theme.primary : theme.border}
+                          size={isAddButton ? 36 : 28}
+                          color={
+                            isAddButton 
+                              ? (theme.background === '#E5EBEA' ? '#101419' : 'white') // Black in light mode, white in dark mode
+                              : focused 
+                                ? 'white'
+                                : theme.text
+                          }
                         />
                       </Pressable>
                     );
@@ -65,8 +85,15 @@ export default function TabsLayout() {
         <Tabs.Screen name="home" />
         <Tabs.Screen name="videos" />
         <Tabs.Screen name="add-video" />
+        <Tabs.Screen name="friends" />
+        <Tabs.Screen name="leaderboard" />
       </Tabs>
       
+      {/* Global XP Feedback Animation */}
+      <GlobalXPFeedback />
+      
+      {/* Level Up Modal with Confetti */}
+      <LevelUpModal />
     </>
   );
 }
@@ -90,46 +117,32 @@ const styles = StyleSheet.create({
     width: '90%',
     borderRadius: 32,
     alignSelf: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.15,
+    shadowRadius: 16,
+    elevation: 8,
   },
   tabBar: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-around',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
     borderRadius: 32,
-    width: '100%',
-    paddingVertical: 10,
-    paddingHorizontal: 0,
-    justifyContent: 'space-evenly',
-    elevation: 3,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.12,
-    shadowRadius: 8,
-    shadowColor: "#0000"
+    height: TAB_BAR_HEIGHT,
   },
   tabButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    marginHorizontal: 2,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 2,
-    borderColor: '#eee',
-    backgroundColor: '#fff',
-  },
-  fab: {
-    position: 'absolute',
-    right: 32,
-    // Center vertically with the pill
-    // pill top: bottom: 32, pill height: TAB_BAR_HEIGHT, button size: TAB_BUTTON_SIZE
-    // top = window height - bottom - pill height + (pill height - button size) / 2
-    top: Dimensions.get('window').height - 32 - TAB_BAR_HEIGHT + (TAB_BAR_HEIGHT - TAB_BUTTON_SIZE) / 2,
     width: TAB_BUTTON_SIZE,
     height: TAB_BUTTON_SIZE,
     borderRadius: TAB_BUTTON_SIZE / 2,
-    justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 2,
-    zIndex: 20,
-    backgroundColor: '#fff',
+    justifyContent: 'center',
+  },
+  addButton: {
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
   },
 });
