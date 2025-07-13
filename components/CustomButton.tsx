@@ -1,7 +1,6 @@
-import { useThemeStore } from '@/stores/themeStore';
-import { StyleSheet, ViewStyle } from 'react-native';
-import { Button } from '@rneui/base';
 import { useTheme } from '@react-navigation/native';
+import { Button } from '@rneui/base';
+import { StyleSheet, ViewStyle } from 'react-native';
 
 interface CustomButtonProps {
     title: string;
@@ -11,9 +10,12 @@ interface CustomButtonProps {
     width?:any
     marginVertical?:any
     isLoading?: boolean;
+    alignSelf?: 'auto' | 'flex-start' | 'flex-end' | 'center' | 'stretch' | 'baseline';
+    iconName?: string;
+    iconType?: string;
 }
 
-const CustomButton = ({title, onPress, style, disabled, width, marginVertical, isLoading}:CustomButtonProps) => {
+const CustomButton = ({title, onPress, style, disabled, width, marginVertical, isLoading, alignSelf = 'center', iconName, iconType}:CustomButtonProps) => {
   const {colors} = useTheme();
   return (
     <Button
@@ -21,13 +23,19 @@ const CustomButton = ({title, onPress, style, disabled, width, marginVertical, i
     onPress={onPress}
     disabled={disabled}
     buttonStyle={[styles.con, style, 
-      {width: width ? width : '100%', alignSelf:'center'},
+      {width: width ? width : '100%', alignSelf: alignSelf},
       {marginVertical: marginVertical ? marginVertical : 0},
       {backgroundColor: colors.primary}
     ]}
-    titleStyle={{fontFamily:'DMSans-Bold', fontSize:16, color: colors.background, textAlign:"center",width:"100%"}}
-    containerStyle={{width: width ? width : '100%', alignSelf:'center'}}
+    titleStyle={{fontFamily:'DMSans-Bold', fontSize:16, color: colors.background, textAlign:"center"}}
+    containerStyle={{width: width ? width : '100%', alignSelf: alignSelf}}
     loading={isLoading}
+    icon={iconName ? {
+      name: iconName,
+      type: iconType,
+      size: 18,
+      color: colors.background,
+    } : undefined}
     />
   )
 }
@@ -38,8 +46,9 @@ const styles = StyleSheet.create({
     con:{
         justifyContent:"center",
         alignItems:"center",
-        padding:10,
-        borderRadius:100,
+        paddingHorizontal: 20,
+        paddingVertical: 12,
+        borderRadius:20,
         backgroundColor:"black",
     }
 })

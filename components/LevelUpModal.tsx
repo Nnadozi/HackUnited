@@ -1,9 +1,10 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useRef } from 'react';
-import { Animated, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Animated, Modal, Pressable, StyleSheet, View } from 'react-native';
 import ConfettiCannon from 'react-native-confetti-cannon';
 import { useThemeStore } from '../stores/themeStore';
 import { useUserStore } from '../stores/userStore';
+import CustomText from './CustomText';
 
 export const LevelUpModal = () => {
   const { justLeveledUp, resetLevelUp, currentLevel, user } = useUserStore();
@@ -49,21 +50,38 @@ export const LevelUpModal = () => {
         >
           <Ionicons name="star" size={80} color="#FFD700" style={styles.starIcon} />
           
-          <Text style={[styles.title, { color: colors.primary }]}>
+          <CustomText 
+            fontSize="XL"
+            bold
+            style={{ color: colors.primary, marginBottom: 8 }}
+          >
             LEVEL UP!
-          </Text>
-          <Text style={[styles.subtitle, { color: colors.text }]}>
+          </CustomText>
+          <CustomText 
+            fontSize="normal"
+            style={{ color: colors.text, marginBottom: 4 }}
+          >
             Congratulations, {user?.name}!
-          </Text>
-          <Text style={[styles.levelText, { color: colors.text }]}>
+          </CustomText>
+          <CustomText 
+            fontSize="large"
+            bold
+            style={{ color: colors.text, marginBottom: 24 }}
+          >
             You've reached Level {currentLevel}!
-          </Text>
+          </CustomText>
           
           <Pressable 
             onPress={resetLevelUp} 
             style={[styles.button, { backgroundColor: colors.primary }]}
           >
-            <Text style={styles.buttonText}>Keep Going!</Text>
+            <CustomText 
+              fontSize="normal"
+              bold
+              style={{ color: 'white' }}
+            >
+              Keep Going!
+            </CustomText>
           </Pressable>
         </Animated.View>
         <ConfettiCannon 

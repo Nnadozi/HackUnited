@@ -1,8 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
-import { ActivityIndicator, Alert, Pressable, ScrollView, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, Pressable, ScrollView, View } from 'react-native';
 import { useThemeStore } from '../stores/themeStore';
 import { generateEnhancedVideoAnalysis, VideoAnalysisResult } from '../utils/videoAnalysis';
+import CustomText from './CustomText';
 
 interface VideoAnalysisTestProps {
   onClose: () => void;
@@ -124,14 +125,14 @@ export default function VideoAnalysisTest({ onClose }: VideoAnalysisTestProps) {
         >
           <Ionicons name="close" size={20} color={theme.text} />
         </Pressable>
-        <Text style={{ 
+        <CustomText style={{ 
           fontSize: 24, 
           fontWeight: '800', 
           color: theme.text, 
           flex: 1 
         }}>
           Video Analysis Test
-        </Text>
+        </CustomText>
       </View>
 
       <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 24 }}>
@@ -144,15 +145,15 @@ export default function VideoAnalysisTest({ onClose }: VideoAnalysisTestProps) {
           borderWidth: 1,
           borderColor: theme.border + '40'
         }}>
-          <Text style={{ 
+          <CustomText style={{ 
             fontSize: 18, 
             fontWeight: '700', 
             color: theme.text,
             marginBottom: 12
           }}>
             Enhanced Video Analysis Test
-          </Text>
-          <Text style={{ 
+          </CustomText>
+          <CustomText style={{ 
             fontSize: 14, 
             color: theme.text, 
             opacity: 0.7,
@@ -160,7 +161,7 @@ export default function VideoAnalysisTest({ onClose }: VideoAnalysisTestProps) {
             marginBottom: 16
           }}>
             This test demonstrates the enhanced video analysis system that scrapes YouTube content for hashtags, descriptions, and metadata to improve content categorization.
-          </Text>
+          </CustomText>
           
           <Pressable
             onPress={testVideoAnalysis}
@@ -178,26 +179,26 @@ export default function VideoAnalysisTest({ onClose }: VideoAnalysisTestProps) {
             {isAnalyzing ? (
               <>
                 <ActivityIndicator size="small" color="white" />
-                <Text style={{ 
+                <CustomText style={{ 
                   fontSize: 16, 
                   fontWeight: '700', 
                   color: 'white',
                   marginLeft: 12
                 }}>
                   Analyzing Videos...
-                </Text>
+                </CustomText>
               </>
             ) : (
               <>
                 <Ionicons name="play-circle-outline" size={20} color="white" />
-                <Text style={{ 
+                <CustomText style={{ 
                   fontSize: 16, 
                   fontWeight: '700', 
                   color: 'white',
                   marginLeft: 12
                 }}>
                   Run Analysis Test
-                </Text>
+                </CustomText>
               </>
             )}
           </Pressable>
@@ -212,32 +213,32 @@ export default function VideoAnalysisTest({ onClose }: VideoAnalysisTestProps) {
           borderWidth: 1,
           borderColor: theme.border + '40'
         }}>
-          <Text style={{ 
+          <CustomText style={{ 
             fontSize: 16, 
             fontWeight: '700', 
             color: theme.text,
             marginBottom: 16
           }}>
             Test URLs
-          </Text>
+          </CustomText>
           {testUrls.map((testCase, index) => (
             <View key={index} style={{ marginBottom: 12 }}>
-              <Text style={{ 
+              <CustomText style={{ 
                 fontSize: 14, 
                 fontWeight: '600', 
                 color: theme.text,
                 marginBottom: 4
               }}>
                 {testCase.description}
-              </Text>
-              <Text style={{ 
+              </CustomText>
+              <CustomText style={{ 
                 fontSize: 12, 
                 color: theme.text, 
                 opacity: 0.6,
                 fontFamily: 'monospace'
               }}>
                 {testCase.url}
-              </Text>
+              </CustomText>
             </View>
           ))}
         </View>
@@ -251,14 +252,14 @@ export default function VideoAnalysisTest({ onClose }: VideoAnalysisTestProps) {
             borderWidth: 1,
             borderColor: theme.border + '40'
           }}>
-            <Text style={{ 
+            <CustomText style={{ 
               fontSize: 16, 
               fontWeight: '700', 
               color: theme.text,
               marginBottom: 16
             }}>
               Analysis Results
-            </Text>
+            </CustomText>
             
             {results.map((result, index) => (
               <View key={index} style={{ 
@@ -269,14 +270,14 @@ export default function VideoAnalysisTest({ onClose }: VideoAnalysisTestProps) {
                 borderWidth: 1,
                 borderColor: theme.border + '20'
               }}>
-                <Text style={{ 
+                <CustomText style={{ 
                   fontSize: 14, 
                   fontWeight: '700', 
                   color: theme.text,
                   marginBottom: 8
                 }}>
                   {result.title}
-                </Text>
+                </CustomText>
                 
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 8 }}>
                   <View style={{ 
@@ -285,13 +286,13 @@ export default function VideoAnalysisTest({ onClose }: VideoAnalysisTestProps) {
                     paddingVertical: 4, 
                     borderRadius: 12 
                   }}>
-                    <Text style={{ 
+                    <CustomText style={{ 
                       fontSize: 10, 
                       fontWeight: '700', 
                       color: 'white' 
                     }}>
                       {result.category.toUpperCase()}
-                    </Text>
+                    </CustomText>
                   </View>
                   <View style={{
                     backgroundColor: getXPColor(result.xp_awarded) + '20',
@@ -299,70 +300,70 @@ export default function VideoAnalysisTest({ onClose }: VideoAnalysisTestProps) {
                     paddingVertical: 4,
                     borderRadius: 12
                   }}>
-                    <Text style={{ 
+                    <CustomText style={{ 
                       fontSize: 10, 
                       fontWeight: '700', 
                       color: getXPColor(result.xp_awarded) 
                     }}>
                       {result.xp_awarded > 0 ? '+' : ''}{result.xp_awarded} XP
-                    </Text>
+                    </CustomText>
                   </View>
-                  <Text style={{ 
+                  <CustomText style={{ 
                     fontSize: 12, 
                     color: theme.text, 
                     opacity: 0.6
                   }}>
                     {result.quality_score}% Quality
-                  </Text>
+                  </CustomText>
                 </View>
 
                 {result.scraped_data && (
                   <View style={{ marginTop: 12 }}>
-                    <Text style={{ 
+                    <CustomText style={{ 
                       fontSize: 12, 
                       fontWeight: '600', 
                       color: theme.text,
                       marginBottom: 8
                     }}>
                       Scraped Data:
-                    </Text>
+                    </CustomText>
                     
                     {result.scraped_data.channel_name && (
-                      <Text style={{ 
+                      <CustomText style={{ 
                         fontSize: 11, 
                         color: theme.text, 
                         opacity: 0.7,
                         marginBottom: 4
                       }}>
                         Channel: {result.scraped_data.channel_name}
-                      </Text>
+                      </CustomText>
                     )}
                     
                     {result.scraped_data.hashtags && result.scraped_data.hashtags.length > 0 && (
-                      <Text style={{ 
+                      <CustomText style={{ 
                         fontSize: 11, 
                         color: theme.text, 
                         opacity: 0.7,
                         marginBottom: 4
                       }}>
                         Hashtags: {result.scraped_data.hashtags.slice(0, 3).join(', ')}
-                      </Text>
+                      </CustomText>
                     )}
                     
                     {result.scraped_data.description && (
-                      <Text style={{ 
+                      <CustomText style={{ 
                         fontSize: 11, 
                         color: theme.text, 
                         opacity: 0.7,
                         marginBottom: 4
                       }}>
                         Description: {result.scraped_data.description.substring(0, 100)}...
-                      </Text>
+                      </CustomText>
                     )}
                   </View>
                 )}
 
-                <Text style={{ 
+                <CustomText style={{ 
                   fontSize: 11, 
                   color: theme.text, 
                   opacity: 0.6,
@@ -370,7 +371,7 @@ export default function VideoAnalysisTest({ onClose }: VideoAnalysisTestProps) {
                   fontStyle: 'italic'
                 }}>
                   {result.analysis.reason}
-                </Text>
+                </CustomText>
               </View>
             ))}
           </View>
