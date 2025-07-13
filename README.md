@@ -1,5 +1,5 @@
 # Clarity - Video Quality Tracking App
-View Submission: https://devpost.com/software/clarify-02qhgp
+View Submission: https://devpost.com/software/clarify-02qhgp <br>
 Demo: https://youtu.be/qfEjSKSDZOQ
 
 ## Inspiration
