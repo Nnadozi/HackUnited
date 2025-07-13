@@ -124,11 +124,13 @@ export default function FriendsScreen() {
           <CustomText fontSize="small" opacity={0.5} numberOfLines={1}>{friend.email}</CustomText>
         </View>
       </View>
-      <CustomButton
-        title="Remove"
-        onPress={() => handleRemoveFriend(friend.id)}
-        style={{ ...styles.removeButton, backgroundColor: '#F44336' }}
-      />
+      <View style={styles.friendActions}>
+        <CustomButton
+          title="✕"
+          onPress={() => handleRemoveFriend(friend.id)}
+          style={[styles.iconButton, { backgroundColor: '#F44336' }] as any}
+        />
+      </View>
     </View>
   );
 
@@ -145,14 +147,14 @@ export default function FriendsScreen() {
       </View>
       <View style={styles.requestActions}>
         <CustomButton
-          title="Accept"
+          title="✓"
           onPress={() => handleAcceptRequest(request.id)}
-          style={{ ...styles.acceptButton, backgroundColor: '#4CAF50' }}
+          style={[styles.iconButton, { backgroundColor: '#4CAF50' }] as any}
         />
         <CustomButton
-          title="Reject"
+          title="✕"
           onPress={() => handleRejectRequest(request.id)}
-          style={{ ...styles.rejectButton, backgroundColor: '#F44336' }}
+          style={[styles.iconButton, { backgroundColor: '#F44336' }] as any}
         />
       </View>
     </View>
@@ -311,7 +313,6 @@ const styles = StyleSheet.create({
   friendCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
     padding: 16,
     borderRadius: 12,
     marginBottom: 12,
@@ -339,7 +340,6 @@ const styles = StyleSheet.create({
   },
   friendInfo: {
     flex: 1,
-    marginLeft: 12,
     flexDirection: 'row',
     alignItems: 'center',
   },
@@ -359,13 +359,14 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   friendActions: {
-    flexDirection: 'row',
-    gap: 8,
+    justifyContent: 'flex-end',
+    alignItems: 'center',
   },
   requestActions: {
     flexDirection: 'row',
-    gap: 8,
+    gap: 12,
     marginTop: 12,
+    justifyContent: 'flex-end',
   },
   actionButton: {
     paddingHorizontal: 12,
@@ -374,15 +375,13 @@ const styles = StyleSheet.create({
     minWidth: 70,
     alignItems: 'center',
   },
-  removeButton: {
-    minWidth: 80,
-    maxWidth: 100,
-  },
-  acceptButton: {
-    flex: 1,
-  },
-  rejectButton: {
-    flex: 1,
+  iconButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: 40,
   },
   addButton: {
     minWidth: 100,

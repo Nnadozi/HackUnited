@@ -386,27 +386,27 @@ export default function VideoDetailModal({ visible, video, onClose }: VideoDetai
               
               <View style={styles.insightsGrid}>
                 <View style={[styles.insightCard, { backgroundColor: colors.background }]}>
-                  <CustomText fontSize="small" bold opacity={0.8}>Target Audience</CustomText>
+                  <CustomText fontSize="small" bold opacity={0.8} style={{ marginBottom: 12 }}>Target Audience</CustomText>
                   <CustomText fontSize="normal" style={{ color: colors.primary }}>
                     {video.content_insights.target_audience}
                   </CustomText>
                 </View>
                 
                 <View style={[styles.insightCard, { backgroundColor: colors.background }]}>
-                  <CustomText fontSize="small" bold opacity={0.8}>Complexity</CustomText>
+                  <CustomText fontSize="small" bold opacity={0.8} style={{ marginBottom: 12 }}>Complexity</CustomText>
                   <View style={styles.complexityBadge}>
                     <CustomText fontSize="small" bold style={{ color: 'white' }}>
                       {video.content_insights.complexity_level?.toUpperCase()}
                     </CustomText>
                   </View>
                 </View>
-                
-                <View style={[styles.insightCard, { backgroundColor: colors.background }]}>
-                  <CustomText fontSize="small" bold opacity={0.8}>Retention</CustomText>
-                  <CustomText fontSize="large" bold style={{ color: colors.primary }}>
-                    {video.content_insights.estimated_retention}%
-                  </CustomText>
-                </View>
+              </View>
+              
+              <View style={[styles.insightCard, { backgroundColor: colors.background, marginTop: 12 }]}>
+                <CustomText fontSize="small" bold opacity={0.8} style={{ marginBottom: 12 }}>Retention Rate</CustomText>
+                <CustomText fontSize="large" bold style={{ color: colors.primary }}>
+                  {video.content_insights.estimated_retention}%
+                </CustomText>
               </View>
               
               {video.content_insights.key_takeaways && video.content_insights.key_takeaways.length > 0 && (
@@ -444,7 +444,7 @@ export default function VideoDetailModal({ visible, video, onClose }: VideoDetai
               
               <View style={styles.moodGrid}>
                 <View style={[styles.moodCard, { backgroundColor: colors.background }]}>
-                  <CustomText fontSize="small" bold opacity={0.8}>Overall Tone</CustomText>
+                  <CustomText fontSize="small" bold opacity={0.8} style={{ marginBottom: 12 }}>Overall Tone</CustomText>
                   <View style={[styles.toneBadge, { backgroundColor: getToneColor(video.mood_analysis.overall_tone) }]}>
                     <CustomText fontSize="small" bold style={{ color: 'white' }}>
                       {video.mood_analysis.overall_tone?.toUpperCase()}
@@ -453,7 +453,7 @@ export default function VideoDetailModal({ visible, video, onClose }: VideoDetai
                 </View>
                 
                 <View style={[styles.moodCard, { backgroundColor: colors.background }]}>
-                  <CustomText fontSize="small" bold opacity={0.8}>Energy Level</CustomText>
+                  <CustomText fontSize="small" bold opacity={0.8} style={{ marginBottom: 12 }}>Energy Level</CustomText>
                   <View style={styles.energyIndicator}>
                     {['low', 'medium', 'high'].map((level, index) => (
                       <View
@@ -903,19 +903,19 @@ const styles = StyleSheet.create({
   },
   insightsGrid: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: 12,
+    gap: 16,
     marginBottom: 16,
   },
   insightCard: {
     flex: 1,
-    padding: 16,
+    padding: 20,
     borderRadius: 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 4,
+    alignItems: 'center',
   },
   complexityBadge: {
     backgroundColor: '#FF9800',
@@ -978,9 +978,9 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   energyBar: {
-    width: 12,
-    height: 8,
-    borderRadius: 4,
+    width: 16,
+    height: 16,
+    borderRadius: 8,
   },
   emotionalImpactContainer: {
     marginTop: 16,
