@@ -15,6 +15,7 @@ SplashScreen.preventAutoHideAsync();
 export default function RootLayout() {
   const { isDark } = useThemeStore();
   const hasCompletedOnboarding = useUserStore((s) => s.hasCompletedOnboarding);
+  const isAuthenticated = useUserStore((s) => s.isAuthenticated);
   const initializeFromStorage = useUserStore((s) => s.initializeFromStorage);
   const [loaded, error] = useFonts({
     'DMSans-Regular': require('../assets/fonts/DMSans-Regular.ttf'),
@@ -50,9 +51,12 @@ export default function RootLayout() {
             },
           }}
         >
-          <Stack screenOptions={{ headerShown: false }} initialRouteName={hasCompletedOnboarding ? "(tabs)" : "(onboarding)"}>
-            <Stack.Screen name="(onboarding)" />
-            <Stack.Screen name="(tabs)" />
+          <Stack screenOptions={{ headerShown: false }}>
+            {hasCompletedOnboarding && isAuthenticated ? (
+              <Stack.Screen name="(tabs)" />
+            ) : (
+              <Stack.Screen name="(onboarding)" />
+            )}
           </Stack>
         </ThemeProvider>
       </SafeAreaProvider>

@@ -1,4 +1,5 @@
 import { ButtonGroup } from '@rneui/themed';
+import { useRouter } from 'expo-router';
 import React from 'react';
 import { Alert, Modal, Pressable, StyleSheet, View } from 'react-native';
 import { useThemeStore } from '../stores/themeStore';
@@ -19,6 +20,7 @@ export default function SettingsModal({ visible, onClose }: { visible: boolean; 
   const mode = useThemeStore((s: any) => s.mode);
   const colors = useThemeStore((s: any) => s.colors);
   const setThemeMode = useThemeStore((s: any) => s.setThemeMode);
+  const router = useRouter();
 
   const selectedIndex = THEME_MODES.findIndex(theme => theme.value === mode);
 
@@ -30,6 +32,8 @@ export default function SettingsModal({ visible, onClose }: { visible: boolean; 
           await useUserStore.getState().deleteAccount();
           setThemeMode('system');
           onClose();
+          // Force navigation to onboarding
+          router.replace('/(onboarding)');
         } catch (error) {
           console.error('Error deleting account:', error);
           onClose();

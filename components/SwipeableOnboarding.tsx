@@ -4,13 +4,13 @@ import React, { useRef, useState } from 'react';
 import { Dimensions, Image, StyleSheet, View } from 'react-native';
 import { PanGestureHandler, PanGestureHandlerGestureEvent } from 'react-native-gesture-handler';
 import Animated, {
-  Extrapolate,
-  interpolate,
-  runOnJS,
-  useAnimatedGestureHandler,
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
+    Extrapolate,
+    interpolate,
+    runOnJS,
+    useAnimatedGestureHandler,
+    useAnimatedStyle,
+    useSharedValue,
+    withSpring,
 } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useThemeStore } from '../stores/themeStore';
@@ -41,9 +41,9 @@ interface AnimatedScreenProps {
 const AnimatedScreen = React.memo(({ screen, index, translateX, theme }: AnimatedScreenProps) => {
   const animatedContentStyle = useAnimatedStyle(() => {
     const inputRange = [
-      (index - 1) * SCREEN_WIDTH,
-      index * SCREEN_WIDTH,
-      (index + 1) * SCREEN_WIDTH,
+      -(index + 1) * SCREEN_WIDTH,
+      -index * SCREEN_WIDTH,
+      -(index - 1) * SCREEN_WIDTH,
     ];
     const opacity = interpolate(
       translateX.value,
@@ -201,8 +201,9 @@ export default function SwipeableOnboarding() {
 
   const goToNext = () => {
     if (currentIndex < screens.length - 1) {
-      setCurrentIndex(currentIndex + 1);
-      translateX.value = withSpring(-(currentIndex + 1) * SCREEN_WIDTH, {
+      const nextIndex = currentIndex + 1;
+      setCurrentIndex(nextIndex);
+      translateX.value = withSpring(-nextIndex * SCREEN_WIDTH, {
         damping: 15,
         stiffness: 80,
         mass: 1,
@@ -212,12 +213,20 @@ export default function SwipeableOnboarding() {
 
   const goToPrevious = () => {
     if (currentIndex > 0) {
-      setCurrentIndex(currentIndex - 1);
-      translateX.value = withSpring(-(currentIndex - 1) * SCREEN_WIDTH, {
+      const prevIndex = currentIndex - 1;
+      setCurrentIndex(prevIndex);
+      translateX.value = withSpring(-prevIndex * SCREEN_WIDTH, {
         damping: 15,
         stiffness: 80,
         mass: 1,
       });
+    }
+  };
+
+  const syncCurrentIndex = (position: number) => {
+    const newIndex = Math.round(position / SCREEN_WIDTH);
+    if (newIndex !== currentIndex && newIndex >= 0 && newIndex < screens.length) {
+      setCurrentIndex(newIndex);
     }
   };
 
@@ -229,17 +238,25 @@ export default function SwipeableOnboarding() {
       translateX.value = context.startX + event.translationX;
     },
     onEnd: (event) => {
-      const threshold = SCREEN_WIDTH * 0.3;
+      const threshold = SCREEN_WIDTH * 0.25; // Reduced threshold
       
-      if (event.translationX > threshold && event.velocityX > 500) {
+      // More lenient swipe detection
+      if (event.translationX > threshold || event.velocityX > 200) {
+        // Swipe right - go to previous
         runOnJS(goToPrevious)();
-      } else if (event.translationX < -threshold && event.velocityX < -500) {
+      } else if (event.translationX < -threshold || event.velocityX < -200) {
+        // Swipe left - go to next
         runOnJS(goToNext)();
       } else {
-        translateX.value = withSpring(-currentIndex * SCREEN_WIDTH, {
+        // Snap back to current screen - calculate from current translateX position
+        const currentScreenPosition = Math.round(-translateX.value / SCREEN_WIDTH);
+        const targetPosition = Math.max(0, Math.min(currentScreenPosition, screens.length - 1));
+        translateX.value = withSpring(-targetPosition * SCREEN_WIDTH, {
           damping: 15,
           stiffness: 80,
           mass: 1,
+        }, () => {
+          runOnJS(syncCurrentIndex)(-targetPosition * SCREEN_WIDTH);
         });
       }
     }
