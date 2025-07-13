@@ -563,6 +563,10 @@ export interface VideoAnalysisResponse {
     stress_relief: number;
     social_value: number;
     creativity_stimulation: number;
+    production_quality: number;
+    engagement_factor: number;
+    information_density: number;
+    practical_applicability: number;
   };
   recommendations: {
     watch_duration: 'full' | 'partial' | 'skip' | 'moderate';
@@ -572,6 +576,17 @@ export interface VideoAnalysisResponse {
   };
   content_warnings?: string[];
   learning_objectives?: string[];
+  mood_analysis?: {
+    overall_tone: 'positive' | 'negative' | 'neutral' | 'mixed';
+    energy_level: 'high' | 'medium' | 'low';
+    emotional_impact: string;
+  };
+  content_insights?: {
+    key_takeaways: string[];
+    target_audience: string;
+    complexity_level: 'beginner' | 'intermediate' | 'advanced';
+    estimated_retention: number;
+  };
 }
 
 export const videoAnalysisService = {
