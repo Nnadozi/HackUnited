@@ -43,6 +43,59 @@ function getThumbnailUrl(url: string, platform: string): string | undefined {
   }
 }
 
+// New helper to decode HTML entities
+function decodeHtmlEntities(text: string) {
+  return text
+    .replace(/&quot;/g, '"')
+    .replace(/&#x27;/g, "'")
+    .replace(/&#39;/g, "'")
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&apos;/g, "'");
+}
+
+// New helper to fetch duration & views for supported platforms
+async function fetchMetadata(videoUrl: string, platform: string): Promise<{ duration?: number; views?: number }> {
+  try {
+    switch (platform) {
+      case 'youtube': {
+        // Fetch raw HTML (RN has no CORS restrictions)
+        const res = await fetch(videoUrl, {
+          headers: {
+            'User-Agent':
+              'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36',
+          },
+        });
+        const html = await res.text();
+        const durMatch = html.match(/"lengthSeconds":"(\d+)"/);
+        const viewsMatch = html.match(/"viewCount":"(\d+)"/);
+        return {
+          duration: durMatch ? parseInt(durMatch[1], 10) : undefined,
+          views: viewsMatch ? parseInt(viewsMatch[1], 10) : undefined,
+        };
+      }
+      case 'instagram': {
+        const res = await fetch(videoUrl);
+        const html = await res.text();
+        // Duration
+        let duration: number | undefined;
+        const durMeta = html.match(/property="og:video:duration" content="(\d+)"/);
+        if (durMeta) duration = parseInt(durMeta[1], 10);
+        // Views (fallback to video_view_count JSON)
+        let views: number | undefined;
+        const viewsMatch = html.match(/"video_view_count":(\d+)/) || html.match(/"play_count":(\d+)/);
+        if (viewsMatch) views = parseInt(viewsMatch[1], 10);
+        return { duration, views };
+      }
+      default:
+        return {};
+    }
+  } catch {
+    return {};
+  }
+}
+
 export default function AddVideoScreen() {
   const { colors } = useThemeStore();
   const theme = colors;
@@ -72,17 +125,18 @@ export default function AddVideoScreen() {
           const data = await res.json();
           return data.title || '';
         case 'instagram':
-          // For Instagram, we'll try to scrape the caption from the page
+          // Attempt to produce a cleaner caption from page meta
           try {
             const response = await fetch(videoUrl);
             const html = await response.text();
-            // Look for caption in meta tags or structured data
-            const captionMatch = html.match(/<meta property="og:description" content="([^"]+)"/);
-            if (captionMatch) {
-              const caption = captionMatch[1];
-              // Get first line of caption
-              const firstLine = caption.split('\n')[0];
-              return firstLine || `Instagram Post ${videoId}`;
+            // The og:description meta contains likes/comments - user on date: "caption"
+            const descMatch = html.match(/<meta property="og:description" content="([^"]+)"/);
+            if (descMatch) {
+              let raw = descMatch[1];
+              // Remove leading likes/comments and author/date section before the colon
+              const afterColon = raw.includes(':') ? raw.split(':').slice(1).join(':').trim() : raw;
+              const cleaned = decodeHtmlEntities(afterColon).replace(/^\"|\"$/g, '').trim();
+              if (cleaned.length > 0) return cleaned;
             }
             return `Instagram Post ${videoId}`;
           } catch {
@@ -139,6 +193,11 @@ export default function AddVideoScreen() {
     
     setLoading(true);
     setError('');
+    setLoadingStep('Fetching video metadata...');
+
+    // Gather additional metadata (duration & views)
+    const { duration: fetchedDuration, views: fetchedViews } = await fetchMetadata(url, platform);
+
     setLoadingStep('Analyzing video content...');
     
     try {
@@ -171,8 +230,8 @@ export default function AddVideoScreen() {
         url,
         thumbnailUrl: thumbnail,
         platform,
-        duration: undefined,
-        views: undefined,
+        duration: fetchedDuration,
+        views: fetchedViews,
         likes: undefined,
         comments: Math.floor(Math.random() * 5000) + 10,
         quality_score: analysisResult.quality_score,

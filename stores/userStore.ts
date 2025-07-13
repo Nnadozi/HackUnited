@@ -39,6 +39,10 @@ export interface Video {
     stress_relief: number;
     social_value: number;
     creativity_stimulation: number;
+    production_quality: number;
+    engagement_factor: number;
+    information_density: number;
+    practical_applicability: number;
   };
   recommendations?: {
     watch_duration: 'full' | 'partial' | 'skip' | 'moderate';
@@ -48,6 +52,17 @@ export interface Video {
   };
   content_warnings?: string[];
   learning_objectives?: string[];
+  mood_analysis?: {
+    overall_tone: 'positive' | 'negative' | 'neutral' | 'mixed';
+    energy_level: 'high' | 'medium' | 'low';
+    emotional_impact: string;
+  };
+  content_insights?: {
+    key_takeaways: string[];
+    target_audience: string;
+    complexity_level: 'beginner' | 'intermediate' | 'advanced';
+    estimated_retention: number;
+  };
 }
 
 export interface UserInfo {
@@ -205,7 +220,9 @@ const convertSupabaseVideo = (supabaseVideo: SupabaseVideo): Video => ({
   detailed_analysis: supabaseVideo.detailed_analysis || undefined,
   recommendations: supabaseVideo.recommendations || undefined,
   content_warnings: supabaseVideo.content_warnings || undefined,
-  learning_objectives: supabaseVideo.learning_objectives || undefined
+  learning_objectives: supabaseVideo.learning_objectives || undefined,
+  mood_analysis: supabaseVideo.mood_analysis || undefined,
+  content_insights: supabaseVideo.content_insights || undefined
 });
 
 // Helper to convert local video to Supabase format
@@ -229,7 +246,9 @@ const convertToSupabaseVideo = (video: Omit<Video, 'id' | 'date_watched'>, userI
   detailed_analysis: video.detailed_analysis,
   recommendations: video.recommendations,
   content_warnings: video.content_warnings,
-  learning_objectives: video.learning_objectives
+  learning_objectives: video.learning_objectives,
+  mood_analysis: video.mood_analysis,
+  content_insights: video.content_insights
 });
 
 export const useUserStore = create<UserStore>()(

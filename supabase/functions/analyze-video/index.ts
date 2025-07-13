@@ -15,7 +15,7 @@ interface VideoAnalysisRequest {
   user_level?: number;
 }
 
-interface VideoAnalysisResponse {
+export interface VideoAnalysisResponse {
   xp_awarded: number;
   quality_score: number;
   category: 'educational' | 'entertainment' | 'gaming' | 'productivity' | 'brain_rot' | 'other';
@@ -32,6 +32,10 @@ interface VideoAnalysisResponse {
     stress_relief: number; // 0-100
     social_value: number; // 0-100
     creativity_stimulation: number; // 0-100
+    production_quality: number; // 0-100
+    engagement_factor: number; // 0-100
+    information_density: number; // 0-100
+    practical_applicability: number; // 0-100
   };
   recommendations: {
     watch_duration: 'full' | 'partial' | 'skip' | 'moderate';
@@ -41,6 +45,17 @@ interface VideoAnalysisResponse {
   };
   content_warnings?: string[];
   learning_objectives?: string[];
+  mood_analysis?: {
+    overall_tone: 'positive' | 'negative' | 'neutral' | 'mixed';
+    energy_level: 'high' | 'medium' | 'low';
+    emotional_impact: string;
+  };
+  content_insights?: {
+    key_takeaways: string[];
+    target_audience: string;
+    complexity_level: 'beginner' | 'intermediate' | 'advanced';
+    estimated_retention: number; // 0-100
+  };
 }
 
 // Advanced XP system – same rules as client
@@ -401,7 +416,11 @@ Provide your analysis in this exact JSON format (no additional text):
     "motivation_impact": number, // -100 to 100
     "stress_relief": number, // 0-100
     "social_value": number, // 0-100
-    "creativity_stimulation": number // 0-100
+    "creativity_stimulation": number, // 0-100
+    "production_quality": number, // 0-100 (video/audio quality, editing, presentation)
+    "engagement_factor": number, // 0-100 (how engaging/captivating the content is)
+    "information_density": number, // 0-100 (amount of useful information per minute)
+    "practical_applicability": number // 0-100 (how applicable the content is to real life)
   },
   "recommendations": {
     "watch_duration": "full" | "partial" | "skip" | "moderate",
@@ -410,7 +429,18 @@ Provide your analysis in this exact JSON format (no additional text):
     "alternatives": ["string"] // Suggest better alternatives in English
   },
   "content_warnings": ["string"], // Any warnings in English
-  "learning_objectives": ["string"] // What can be learned, in English
+  "learning_objectives": ["string"], // What can be learned, in English
+  "mood_analysis": {
+    "overall_tone": "positive" | "negative" | "neutral" | "mixed",
+    "energy_level": "high" | "medium" | "low",
+    "emotional_impact": "string" // Brief description of emotional impact
+  },
+  "content_insights": {
+    "key_takeaways": ["string"], // Main points or lessons (max 3)
+    "target_audience": "string", // Who this content is best for
+    "complexity_level": "beginner" | "intermediate" | "advanced",
+    "estimated_retention": number // 0-100, how much viewers will remember
+  }
 }
 
 **Remember: Respond ONLY in English. All text fields must be in English.**
