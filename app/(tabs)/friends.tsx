@@ -129,6 +129,7 @@ export default function FriendsScreen() {
           title="✕"
           onPress={() => handleRemoveFriend(friend.id)}
           style={[styles.iconButton, { backgroundColor: '#F44336' }] as any}
+          width={32}
         />
       </View>
     </View>
@@ -150,11 +151,13 @@ export default function FriendsScreen() {
           title="✓"
           onPress={() => handleAcceptRequest(request.id)}
           style={[styles.iconButton, { backgroundColor: '#4CAF50' }] as any}
+          width={32}
         />
         <CustomButton
           title="✕"
           onPress={() => handleRejectRequest(request.id)}
           style={[styles.iconButton, { backgroundColor: '#F44336' }] as any}
+          width={32}
         />
       </View>
     </View>
@@ -376,12 +379,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   iconButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    minWidth: 40,
+    minWidth: 32,
+    paddingHorizontal: 0,
+    paddingVertical: 0,
   },
   addButton: {
     minWidth: 100,

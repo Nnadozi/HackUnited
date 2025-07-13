@@ -384,21 +384,19 @@ export default function VideoDetailModal({ visible, video, onClose }: VideoDetai
                 </CustomText>
               </View>
               
-              <View style={styles.insightsGrid}>
-                <View style={[styles.insightCard, { backgroundColor: colors.background }]}>
-                  <CustomText fontSize="small" bold opacity={0.8} style={{ marginBottom: 12 }}>Target Audience</CustomText>
-                  <CustomText fontSize="normal" style={{ color: colors.primary }}>
-                    {video.content_insights.target_audience}
+              <View style={[styles.insightCard, { backgroundColor: colors.background }]}>
+                <CustomText fontSize="small" bold opacity={0.8} style={{ marginBottom: 12 }}>Target Audience</CustomText>
+                <CustomText fontSize="normal" style={{ color: colors.primary }}>
+                  {video.content_insights.target_audience}
+                </CustomText>
+              </View>
+              
+              <View style={[styles.insightCard, { backgroundColor: colors.background, marginTop: 12 }]}>
+                <CustomText fontSize="small" bold opacity={0.8} style={{ marginBottom: 12 }}>Complexity</CustomText>
+                <View style={styles.complexityBadge}>
+                  <CustomText fontSize="small" bold style={{ color: 'white' }}>
+                    {video.content_insights.complexity_level?.toUpperCase()}
                   </CustomText>
-                </View>
-                
-                <View style={[styles.insightCard, { backgroundColor: colors.background }]}>
-                  <CustomText fontSize="small" bold opacity={0.8} style={{ marginBottom: 12 }}>Complexity</CustomText>
-                  <View style={styles.complexityBadge}>
-                    <CustomText fontSize="small" bold style={{ color: 'white' }}>
-                      {video.content_insights.complexity_level?.toUpperCase()}
-                    </CustomText>
-                  </View>
                 </View>
               </View>
               
